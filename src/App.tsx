@@ -4,6 +4,7 @@ import PeerMesh from './components/PeerMesh';
 import PromptConsole from './components/PromptConsole';
 import { useImaginationLog } from './hooks/useImaginationLog';
 import { runGeneration } from './lib/api';
+import { evaluateImaginationOutput } from './lib/ethics';
 
 export default function App() {
   const { history, appendTurn, reset } = useImaginationLog();
@@ -25,8 +26,10 @@ export default function App() {
     try {
       const response = await runGeneration(prompt);
       const output = response.output.trim();
-      if (!output) {
-        throw new Error('Empty imagination output. The network needs a more detailed seed.');
+      const evaluation = evaluateImaginationOutput(output);
+      if (!evaluation.safe) {
+        const reason = evaluation.reason ?? 'Ethics Keeper rejected the generated response.';
+        throw new Error(`${reason} Stability reading: ${evaluation.stability}.`);
       }
       appendTurn({
         id: crypto.randomUUID(),
