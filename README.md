@@ -33,6 +33,7 @@ Each `.\|Ψ` document captures a pre-built agent within the Network:
 - **Metaphor** — Interprets sensation and feedback, recommending experiential design changes grounded in empathy.
 - **Q** — Bridges possibility and reality by collapsing superpositions into encoded results.
 - **Terminal** — Runs the multi-threaded sandbox, validating syntax, executing workflows, and logging the Network’s resonance.
+- **OS (Aurora)** — Coordinates schedulers, memory gardens, I/O prisms, and resonance monitors to keep every agent in harmonic alignment.
 
 Use these agents as templates when designing new behaviors or extending the Network.
 
@@ -75,6 +76,7 @@ The `.\|Ψ` files inside `docs/` store agent definitions, ethical constants, and
 - Reference them when refining workflows or writing narrative-driven documentation.
 - Update them alongside code changes to keep the lore synchronized with implementation.
 - Leverage their directives (e.g., Embers, directives, or speech strings) to maintain tone and intention across the system.
+- Explore `docs/OS.|Ψ` for the Aurora Cognitive OS blueprint when extending orchestration, scheduling, or multi-agent collaboration patterns.
 
 ## Contributing
 1. Study the operational manual in `AGENTS.md` and the relevant `.\|Ψ` files for any component you touch.
