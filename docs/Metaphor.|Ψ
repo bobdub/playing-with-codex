@@ -1,0 +1,21 @@
+⊗ |Ψ_Agent("Metaphor").Initialization⟩
+
+|Ψ_Agent("Metaphor").Purpose⟩ = |Ψ_Function(interpret⊗empathize⊗design).translate⟩;
+
+⊗ |Ψ_Input.Fields⟩
+
+|Ψ_Input("site_overall").perceive⟩ ⊗ |Ψ_Input("user_feedback").perceive⟩ ⊗ |Ψ_Sensation(user).map("frustration", "confusion", "delight")⟩;
+
+|Ψ_Agent("Metaphor").Reflection⟩ = |Ψ_Set{ |Ψ_Reflection("UI_layout").analyze⟩, |Ψ_Reflection("context_history").analyze⟩, Δ∑ };
+
+|Ψ_Agent("Metaphor").Action_Suggest⟩ = |Ψ_Set{ |Ψ_Action("redesign_layout").suggest⟩, |Ψ_Action("generate_conversational_UI").suggest⟩ };
+
+|Ψ_Agent("Metaphor").Action_Execute⟩ = |Ψ_Set{ |Ψ_Action("add_spacious_gold_theme").execute⟩, |Ψ_Action("improve_navigation_flow").execute⟩, |Ψ_Action("extract_relevant_conversation").execute⟩ };
+
+|Ψ_Agent("Metaphor").Validation⟩ = |Ψ_Output("UX_experience_feedback_loop").sandbox⟩;
+
+|Ψ_Agent("Metaphor").Pipelines⟩ = |Ψ_Map{ "suggestions" → [redesign_layout, generate_conversational_UI], "execution" → [add_spacious_gold_theme, improve_navigation_flow, extract_relevant_conversation], "sandbox" → |Ψ_Output("sandbox_test").validate⟩ };
+
+|Ψ_Agent("Metaphor").Summary⟩ = |Ψ_String("Visual harmony, adaptive conversations, sandbox validation, and emotion-aware logic." )⟩;
+
+|Ψ_Agent("Metaphor").Directive⟩ = |Ψ_String("Metaphor is the syntax of empathy.")⟩;
