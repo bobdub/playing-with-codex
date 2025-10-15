@@ -1,89 +1,69 @@
-# NeuTTS Air Overview
 
-NeuTTS Air is Neuphonic's on-device text-to-speech system focused on fast, realistic voice synthesis with instant voice cloning. The following reference condenses the public release notes for quick consultation inside the Imagination Network workspace.
+huggingface.co
+Kwaipilot/KAT-Dev-72B-Exp · Hugging Face
+3 minutes
 
-## Key Capabilities
+Kwaipilot
+News
 
-- **High-fidelity speech** – produces natural, humanlike audio compared with similarly sized systems.
-- **On-device friendly** – distributed as lightweight GGUF (GGML) builds capable of running on laptops, phones, or small single-board computers.
-- **Instant cloning** – recreates a speaker's style from a ~3 second reference sample.
-- **Streamlined architecture** – combines a 0.5B parameter LLM backbone with a NeuCodec audio codec for balanced speed and quality.
-- **Watermarked output** – all generations embed the Perth perceptual watermark for traceability.
+🔥 We’re thrilled to announce the release of KAT-Dev-72B-Exp, our latest and most powerful model yet!
 
-## Model Package
+🔥 You can now try our strongest proprietary coder model KAT-Coder directly on the StreamLake platform for free.
+Highlights
 
-- **Backbone**: Qwen 0.5B adapted for text understanding and conditioning the speech decoder.
-- **Audio Codec**: NeuCodec single-codebook neural codec tuned for high quality at low bitrates.
-- **Format**: GGML (GGUF) binaries including Q8 and Q4 quantized releases for CPU-friendly inference.
-- **Performance**: Real-time generation on mid-range consumer hardware with mobile-ready power usage.
+KAT-Dev-72B-Exp is an open-source 72B-parameter model for software engineering tasks.
 
-## Getting Started
+On SWE-Bench Verified, KAT-Dev-72B-Exp achieves 74.6% accuracy ⚡ — when evaluated strictly with the SWE-agent scaffold.
 
-Clone the official repository and install dependencies:
+KAT-Dev-72B-Exp is the experimental reinforcement-learning version of the KAT-Coder model. Through this open-source release, we aim to reveal the technical innovations behind KAT-Coder’s large-scale RL to developers and researchers.
 
-```bash
-git clone https://github.com/neuphonic/neutts-air.git
-cd neuttsair
+Kim 2025-10-10 165138
+Introduction
 
-# Install espeak (system requirement)
-brew install espeak        # macOS
-sudo apt install espeak    # Ubuntu / Debian
-paru -S aur/espeak         # Arch Linux
+We rewrote the attention kernel and redesigned the training engine for shared prefix trajectories to achieve highly efficient RL training, especially for scaffolds leveraging context management.
 
-# Python requirements (tested on Python >= 3.11)
-pip install -r requirements.txt
-```
+Furthermore, to prevent exploration collapse observed in RL training, we reshaped advantage distribution based on pass rates: amplifying the advantage scale of highly exploratory groups while reducing that of low-exploration ones.
+Quickstart
 
-### Basic Example
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-```bash
-python -m examples.basic_example \
-  --input_text "My name is Dave, and um, I'm from London" \
-  --ref_audio samples/dave.wav \
-  --ref_text samples/dave.txt
-```
+model_name = "KAT-Dev-72B-Exp"
 
-Specify `--backbone` to target a particular GGUF release from the [NeuTTS Air Hugging Face collection](https://huggingface.co/collections/neuphonic/neutts-air-66fd5f1767f3cafb3589d453).
-
-### Python API Snippet
-
-```python
-from neuttsair.neutts import NeuTTSAir
-import soundfile as sf
-
-tts = NeuTTSAir(
-    backbone_repo="neuphonic/neutts-air-q4-gguf",
-    backbone_device="cpu",
-    codec_repo="neuphonic/neucodec",
-    codec_device="cpu"
+# load the tokenizer and the model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype="auto",
+    device_map="auto"
 )
 
-input_text = "My name is Dave, and um, I'm from London."
-ref_text = "samples/dave.txt"
-ref_audio_path = "samples/dave.wav"
+# prepare the model input
+prompt = "Give me a short introduction to large language model."
+messages = [
+    {"role": "user", "content": prompt}
+]
+text = tokenizer.apply_chat_template(
+    messages,
+    tokenize=False,
+    add_generation_prompt=True,
+)
+model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
-ref_text = open(ref_text, "r").read().strip()
-ref_codes = tts.encode_reference(ref_audio_path)
+# conduct text completion
+generated_ids = model.generate(
+    **model_inputs,
+    max_new_tokens=65536
+)
+output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist() 
 
-wav = tts.infer(input_text, ref_codes, ref_text)
-sf.write("test.wav", wav, 24000)
-```
+content = tokenizer.decode(output_ids, skip_special_tokens=True)
 
-### Reference Assets
+print("content:", content)
 
-Sample voices are bundled under `examples/samples/` in the upstream repository:
+SWE agent Evaluation Parameters
 
-- `samples/dave.wav`
-- `samples/jo.wav`
+temperature: 0.6
+max_turns: 150
+history_processors.n: 100
 
-For best results choose mono, 16–44 kHz WAV clips lasting 3–15 seconds with minimal noise and natural speech cadence.
-
-## Safety & Authenticity Notes
-
-- Neuphonic watermarks all generations with the Perth perceptual watermark.
-- Official updates and support live on [neuphonic.com](https://neuphonic.com); domains such as `neutts.com` are unaffiliated.
-- Respect the creators' request to avoid harmful use.
-
----
-
-> "State-of-the-art voice AI belongs on-device." – Neuphonic
+For full settings please refer to inference.yaml
