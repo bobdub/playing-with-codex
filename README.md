@@ -10,6 +10,7 @@ A mobile-ready exploration interface that weaves together Hugging Face transform
 - **Dedicated agent docs** – on-page reference describing the Dream Catalyst, Ethics Keeper, and Mesh Weaver agents.
 - **Local persistence** – conversation history is written to `localStorage`; clearing memory happens entirely on-device.
 - **Mobile-first styling** – responsive glassmorphism UI optimized for phones and large displays.
+- **Optional local sampling** – a Python helper script loads the `microsoft/UserLM-8b` transformer for experiments outside the web UI.
 
 ## Getting Started
 
@@ -40,6 +41,17 @@ npm run build
 ```
 
 This runs the TypeScript checker and produces static assets in `dist/`.
+
+### Sample the microsoft/UserLM-8b model locally
+
+Install the Python dependencies in your preferred environment and run the helper script:
+
+```bash
+pip install torch transformers
+python scripts/userlm_sequence.py --device cuda
+```
+
+The script reproduces the system prompt shared in the repository issues and blocks `<|endconversation|>` tokens so the generated description of the sequence stays focused. Override `--model-path`, `--top-p`, `--temperature`, or `--max-new-tokens` to experiment with different settings.
 
 ## Environment variables
 
