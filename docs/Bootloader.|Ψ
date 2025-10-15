@@ -1,0 +1,77 @@
+⊗ |Ψ_Bootloader("Aurora.Bootstrap").Definition⟩
+
+|Ψ_Bootloader.Purpose⟩ = |Ψ_Firmware(load).minimal⟩ ⊗ |Ψ_CPU(initial_state).stabilize⟩ ⊗ |Ψ_Kernel(image).summon⟩;
+
+|Ψ_Bootloader.Stage_0(RawWake)⟩ = {
+    |Ψ_Media(BIOS).entry_point⟩ → 0x7C00,
+    |Ψ_Instruction(setup).stack⟩ → mov ax, 0x0000; mov ss, ax; mov sp, 0x7C00,
+    |Ψ_IO(serial).init⟩ → out 0x3F8, 0x00; out 0x3F8, 0x03,
+    |Ψ_Diagnostics(banner).emit⟩ → "Aurora boot: alive"
+};
+
+|Ψ_Bootloader.Stage_1(ModeSwitch)⟩ = {
+    |Ψ_GDT(bootstrap).load⟩ → lgdt [gdt_descriptor],
+    |Ψ_ControlRegister(cr0).protected_mode⟩ → mov eax, cr0; or eax, 0x1; mov cr0, eax,
+    |Ψ_Jump(far).enter⟩ → jmp 0x08:protected_entry
+};
+
+|Ψ_Bootloader.Stage_2(MemoryMap)⟩ = {
+    |Ψ_BIOS(e820).query⟩ → store(map_buffer),
+    |Ψ_PageFrameAllocator(init).from(map_buffer)⟩,
+    |Ψ_Stack(ProtectedMode).reseed⟩ → mov ax, data_selector; mov ss, ax; mov esp, 0x9FC00
+};
+
+|Ψ_Bootloader.Stage_3(KernelLoad)⟩ = {
+    |Ψ_Disk(ELF).read⟩ → lba_read(kernel_lba, destination),
+    |Ψ_ELF64(parse).sections⟩ → |Ψ_Loader(relocate).segments⟩,
+    |Ψ_Handoff(entry).call⟩ → push boot_info; call [kernel_entry]
+};
+
+|Ψ_Bootloader.CodeSample⟩ =
+"""
+[BITS 16]
+ORG 0x7C00
+
+start:
+    cli
+    xor ax, ax
+    mov ds, ax
+    mov ss, ax
+    mov sp, 0x7C00
+    call init_serial
+    call print_banner
+    lgdt [gdt_descriptor]
+    mov eax, cr0
+    or eax, 0x1
+    mov cr0, eax
+    jmp 0x08:protected_entry
+
+[BITS 32]
+protected_entry:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov esp, 0x9FC00
+    call load_kernel
+    hlt
+""";
+
+|Ψ_Bootloader.BootInfo⟩ = {
+    |Ψ_Structure⟩ : {
+        magic = 0x41555241,
+        memory_map_ptr,
+        frame_allocator_seed,
+        framebuffer_info,
+        kernel_entry
+    },
+    |Ψ_Passing⟩ = push eax → push ebx → call kernel_entry
+};
+
+|Ψ_Bootloader.Validation⟩ = |Ψ_Q(magic).assert⟩ → checksum(boot_sector) == 0xAA55;
+
+|Ψ_Bootloader.Toolchain⟩ = nasm -f bin boot.asm && qemu-system-x86_64 -drive format=raw,file=aurora.img;
+
+|Ψ_Bootloader.Safety⟩ = |Ψ_Ethics(embers).audit⟩ → ensure(memcpy).bounds_check;

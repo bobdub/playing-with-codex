@@ -1,0 +1,58 @@
+⊗ |Ψ_KernelCore("Aurora.Kernel").Definition⟩
+
+|Ψ_KernelCore.Purpose⟩ = |Ψ_Privilege(rings).stabilize⟩ ⊗ |Ψ_Scheduler(seed).ignite⟩ ⊗ |Ψ_Hardware(abstraction).harmonize⟩;
+
+|Ψ_KernelCore.BootStrap⟩ = {
+    |Ψ_GDT(table).segments⟩ = [
+        |Ψ_Descriptor(null)⟩,
+        |Ψ_Descriptor(code32).base(0).limit(0xFFFFF).flags(0x9A)⟩,
+        |Ψ_Descriptor(data32).base(0).limit(0xFFFFF).flags(0x92)⟩,
+        |Ψ_Descriptor(code64).base(0).limit(0xFFFFF).flags(0x9A).l⟩,
+        |Ψ_Descriptor(tss).base(tss_ptr).limit(sizeof(TSS)).flags(0x89)
+    ],
+    |Ψ_IDT(vector_table).entries⟩ = 256 × gate(selector=code64, flags=0x8E)
+};
+
+|Ψ_KernelCore.PageTables⟩ = {
+    |Ψ_PML4⟩ = align(0x1000) → identity_map(0..1GiB),
+    |Ψ_KernelHeap⟩ = higher_half(0xFFFFFFFF80000000) → map(phys_base, size=512MiB),
+    |Ψ_APIC⟩ = map_mmio(0xFEE00000, 4KiB, write_back=false)
+};
+
+|Ψ_KernelCore.EntryPoint⟩ =
+"""
+.global kstart
+kstart:
+    mov rax, cr3_seed
+    mov cr3, rax
+    xor rbp, rbp
+    mov rsp, kernel_stack_top
+    call init_bss
+    call init_console
+    call init_interrupts
+    call init_scheduler
+    call init_hal
+    jmp userland_entry
+""";
+
+|Ψ_KernelCore.Interrupts⟩ = {
+    |Ψ_PIC(8259).mask⟩ → 0xFF,
+    |Ψ_APIC(Local).enable⟩ → set_spurious_vector(0xFF) ⊗ lapic_timer.periodic(1ms),
+    |Ψ_ISR(vector=0x20).implementation⟩ → acknowledge_timer() → scheduler_tick(),
+    |Ψ_DoubleFault(vector=0x08).stack⟩ → ist_index = 1 → map(df_stack)
+};
+
+|Ψ_KernelCore.HAL⟩ = {
+    |Ψ_Timer⟩ = abstraction { lapic_timer, hpet_timer, pit_timer } → select(best_available),
+    |Ψ_InterruptController⟩ = interface { init(), mask(vector), unmask(vector), eoi(vector) },
+    |Ψ_Framebuffer⟩ = detect(vbe ⊗ framebuffer_info) → expose(draw_pixel),
+    |Ψ_Storage⟩ = driver(vfs.block).register(ahci_controller)
+};
+
+|Ψ_KernelCore.Scheduler⟩ = |Ψ_RR(quantum=4ms).policy⟩ → context_switch(tcb_next);
+
+|Ψ_KernelCore.MemorySafety⟩ = |Ψ_Ethics(embers).audit⟩ → guard(copy_from_user) && scrub(freed_pages);
+
+|Ψ_KernelCore.Diagnostics⟩ = serial_log(level=DEBUG) ⊗ ring_buffer(64KiB) ⊗ panic_screen(render(backtrace));
+
+|Ψ_KernelCore.Validation⟩ = qemu-system-x86_64 -kernel aurora.elf -s -S ⊗ gdb aurora.elf;

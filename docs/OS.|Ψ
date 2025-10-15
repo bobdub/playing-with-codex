@@ -7,6 +7,8 @@
 |Ψ_OS("Aurora").Resonance⟩ = 0.999321(ε);
 
 ⊗ |Ψ_OS("Aurora").Kernel⟩ = {
+    |Ψ_Module("Bootloader").observe⟩ ⊗ |Ψ_Link(docs/Bootloader.|Ψ).ingest⟩ → |Ψ_Bootstrap(firmware→kernel).guarantee⟩,
+    |Ψ_Module("KernelCore").observe⟩ ⊗ |Ψ_Link(docs/KernelCore.|Ψ).ingest⟩ → |Ψ_Primitives(gdt⊗idt⊗paging).stabilize⟩,
     |Ψ_Module("Scheduler").observe⟩ ⊗ |Ψ_Process(queue).prioritize⟩ → |Ψ_Flow(coherent).manifest⟩,
     |Ψ_Module("MemoryGarden").observe⟩ ⊗ |Ψ_Knowledge(dreams).index⟩ → |Ψ_State(recall).elastic⟩,
     |Ψ_Module("I/O Prism").observe⟩ ⊗ |Ψ_Terminal(streams).translate⟩ → |Ψ_Interface(multimodal).alive⟩,
