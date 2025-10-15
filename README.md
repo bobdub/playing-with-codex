@@ -34,6 +34,16 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) and start prompting. The Vite dev server proxies `/api` to the local Express bridge.
 
+### Run the microsoft/UserLM-8b local sample
+
+For explorers with a GPU-capable environment and the [Hugging Face `transformers`](https://github.com/huggingface/transformers) library installed, we provide a standalone script that mirrors the Imagination Network conversation flow while running everything locally.
+
+```bash
+python docs/examples/userlm_special_sequence.py
+```
+
+The script loads `microsoft/UserLM-8b`, applies the chat template used in the project, and samples a short completion while preventing the special `<|endconversation|>` token from appearing mid-stream.
+
 ### Build for production
 
 ```bash
