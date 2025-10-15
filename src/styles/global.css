@@ -255,6 +255,12 @@ button.ghost:hover:not(:disabled) {
   background: rgba(0, 198, 255, 0.22);
 }
 
+.mesh__message-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .mesh__composer {
   display: grid;
   gap: 0.75rem;
@@ -289,6 +295,10 @@ button.ghost:hover:not(:disabled) {
   margin: 0;
   color: var(--accent);
   font-size: 0.85rem;
+}
+
+.docs__metric--detail {
+  color: var(--muted);
 }
 
 .footer {

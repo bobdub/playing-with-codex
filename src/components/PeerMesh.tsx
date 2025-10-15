@@ -1,16 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
+import { formatMetricsSummary, type GenerationMetrics } from '../lib/metrics';
 
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
 };
 
-interface PeerMessage {
-  id: string;
-  author: 'self' | 'peer';
-  text: string;
+type MeshLogEntry =
+  | {
+      id: string;
+      type: 'chat';
+      author: 'self' | 'peer';
+      text: string;
+    }
+  | {
+      id: string;
+      type: 'metrics';
+      author: 'self' | 'peer';
+      metrics: GenerationMetrics;
+    };
+
+interface PeerMeshProps {
+  latestMetrics: GenerationMetrics | null;
+  onMetricsReceived?: (metrics: GenerationMetrics) => void;
 }
 
-export default function PeerMesh() {
+export default function PeerMesh({ latestMetrics, onMetricsReceived }: PeerMeshProps) {
   const [connectionState, setConnectionState] = useState<RTCPeerConnectionState>('new');
   const [localOffer, setLocalOffer] = useState('');
   const [remoteOffer, setRemoteOffer] = useState('');
@@ -18,9 +32,15 @@ export default function PeerMesh() {
   const [remoteAnswer, setRemoteAnswer] = useState('');
   const [channelReady, setChannelReady] = useState(false);
   const [draft, setDraft] = useState('');
-  const [messages, setMessages] = useState<PeerMessage[]>([]);
+  const [messages, setMessages] = useState<MeshLogEntry[]>([]);
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<RTCDataChannel | null>(null);
+  const lastSentMetricId = useRef<string | null>(null);
+  const metricsHandlerRef = useRef(onMetricsReceived);
+
+  useEffect(() => {
+    metricsHandlerRef.current = onMetricsReceived;
+  }, [onMetricsReceived]);
 
   useEffect(() => {
     const peer = new RTCPeerConnection(ICE_SERVERS);
@@ -30,11 +50,47 @@ export default function PeerMesh() {
       channel.binaryType = 'arraybuffer';
       channel.onopen = () => setChannelReady(true);
       channel.onclose = () => setChannelReady(false);
-      channel.onmessage = (event) =>
+      channel.onmessage = (event) => {
+        const raw = String(event.data);
+        try {
+          const parsed = JSON.parse(raw) as { type?: string; text?: string; id?: string; metrics?: GenerationMetrics };
+          if (parsed?.type === 'metrics' && parsed.metrics) {
+            const incoming: GenerationMetrics = {
+              ...parsed.metrics,
+              source: 'peer'
+            };
+            setMessages((prev) => [
+              ...prev,
+              { id: incoming.id, type: 'metrics', author: 'peer', metrics: incoming }
+            ]);
+            metricsHandlerRef.current?.(incoming);
+            return;
+          }
+          if (parsed?.type === 'chat') {
+            const text = typeof parsed.text === 'string' ? parsed.text.trim() : '';
+            if (!text) {
+              return;
+            }
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: parsed.id ?? crypto.randomUUID(),
+                type: 'chat',
+                author: 'peer',
+                text
+              }
+            ]);
+            return;
+          }
+        } catch (error) {
+          console.warn('Failed to parse peer payload', error);
+        }
+
         setMessages((prev) => [
           ...prev,
-          { id: crypto.randomUUID(), author: 'peer', text: String(event.data) }
+          { id: crypto.randomUUID(), type: 'chat', author: 'peer', text: raw }
         ]);
+      };
       channelRef.current = channel;
     }
 
@@ -99,13 +155,43 @@ export default function PeerMesh() {
     if (!channelRef.current || !draft.trim()) {
       return;
     }
-    channelRef.current.send(draft.trim());
+    const payload = {
+      type: 'chat' as const,
+      id: crypto.randomUUID(),
+      text: draft.trim()
+    };
+    channelRef.current.send(JSON.stringify(payload));
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), author: 'self', text: draft.trim() }
+      { id: payload.id, type: 'chat', author: 'self', text: payload.text }
     ]);
     setDraft('');
   }
+
+  useEffect(() => {
+    if (!latestMetrics || !channelReady || !channelRef.current) {
+      return;
+    }
+    if (lastSentMetricId.current === latestMetrics.id) {
+      return;
+    }
+
+    const payload = {
+      type: 'metrics' as const,
+      metrics: latestMetrics
+    };
+
+    try {
+      channelRef.current.send(JSON.stringify(payload));
+      setMessages((prev) => [
+        ...prev,
+        { id: latestMetrics.id, type: 'metrics', author: 'self', metrics: latestMetrics }
+      ]);
+      lastSentMetricId.current = latestMetrics.id;
+    } catch (error) {
+      console.warn('Failed to share metrics across the mesh', error);
+    }
+  }, [channelReady, latestMetrics]);
 
   return (
     <section className="panel">
@@ -170,9 +256,15 @@ export default function PeerMesh() {
           <div className="mesh__chat-log">
             {messages.length === 0 ? <p className="console__empty">Awaiting peer transmissions.</p> : null}
             {messages.map((message) => (
-              <p key={message.id} className={`mesh__message mesh__message--${message.author}`}>
-                {message.text}
-              </p>
+              <div key={message.id} className={`mesh__message mesh__message--${message.author}`}>
+                {message.type === 'chat' ? (
+                  <p className="mesh__message-text">{message.text}</p>
+                ) : (
+                  <p className="mesh__message-text">
+                    ⚡ Metrics Sync → {formatMetricsSummary(message.metrics)}
+                  </p>
+                )}
+              </div>
             ))}
           </div>
           <div className="mesh__composer">

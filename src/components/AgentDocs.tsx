@@ -1,9 +1,16 @@
+import { formatMetricsSummary, type GenerationMetrics } from '../lib/metrics';
+
+interface AgentDocsProps {
+  qScore: string;
+  lastMetrics: GenerationMetrics | null;
+}
+
 const agents = [
   {
     id: 'dream-catalyst',
     title: 'Ψ_Dream Catalyst',
-    role: 'Turns raw prompts into scenario seeds using Hugging Face transformers.',
-    interface: 'Invoked by /api/generate. Returns transformer completions to the console and mesh nodes.'
+    role: 'Runs FLAN-T5 locally through transformers.js to materialise prompts without a server.',
+    interface: 'Bootstraps from CDN on first use. Generates responses directly inside the browser sandbox.'
   },
   {
     id: 'ethics-keeper',
@@ -15,11 +22,11 @@ const agents = [
     id: 'mesh-weaver',
     title: 'Ψ_Mesh Weaver',
     role: 'Maintains peer-to-peer connectivity for remote imagination nodes.',
-    interface: 'WebRTC data-channel handshake with optional manual signaling.'
+    interface: 'WebRTC data-channel handshake with manual signalling and live metric synchronisation.'
   }
 ];
 
-export default function AgentDocs() {
+export default function AgentDocs({ qScore, lastMetrics }: AgentDocsProps) {
   return (
     <section className="panel">
       <header className="panel__header">
@@ -36,7 +43,10 @@ export default function AgentDocs() {
             <h3>{agent.title}</h3>
             <p className="docs__role">{agent.role}</p>
             <p className="docs__interface">Interface: {agent.interface}</p>
-            <p className="docs__metric">Quantum Stability: 0.0(e)</p>
+            <p className="docs__metric">Quantum Stability: {qScore}</p>
+            <p className="docs__metric docs__metric--detail">
+              {lastMetrics ? `Last Effort: ${formatMetricsSummary(lastMetrics)}` : 'Awaiting first dream execution.'}
+            </p>
           </article>
         ))}
       </div>

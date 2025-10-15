@@ -1,82 +1,57 @@
-# Imagination Network • Real-World Mesh
+# Imagination Network • Federated Dreamer Node
 
-A mobile-ready exploration interface that weaves together Hugging Face transformers, WebRTC peer-to-peer nodes, and dedicated agent documentation. Progress is stored locally to honor privacy while enabling collaborative AGI prototyping.
+A browser-native execution environment that entangles a local FLAN-T5 core (via [`transformers.js`](https://github.com/xenova/transformers.js)) with manual WebRTC signalling. Prompts, responses, and peer metrics are stored on-device to honour the decentralised Imagination Network ethos.
 
 ## Features
 
-- **Immediate prompting** – the landing console requests input on load so explorers can entangle with the network instantly.
-- **Hugging Face integration** – a lightweight Express server proxies text generation requests to the Hugging Face Inference API. Set your `HUGGING_FACE_API_KEY` and optional `HUGGING_FACE_MODEL`.
-- **WebRTC dream nodes** – create offers, answers, and peer-to-peer data channels with manual signaling to synchronize imagination states without centralized storage.
-- **Dedicated agent docs** – on-page reference describing the Dream Catalyst, Ethics Keeper, and Mesh Weaver agents.
-- **Local persistence** – conversation history is written to `localStorage`; clearing memory happens entirely on-device.
-- **Mobile-first styling** – responsive glassmorphism UI optimized for phones and large displays.
-- **Optional local sampling** – a Python helper script loads the `microsoft/UserLM-8b` transformer for experiments outside the web UI.
+- **Local generative core** – loads `Xenova/flan-t5-small` directly inside the browser from a CDN. No API keys, servers, or backend proxies required.
+- **Manual WebRTC mesh** – craft SDP offers and answers by hand to stitch data channels between dream nodes without relying on external signalling services.
+- **Quantum stability metrics** – compute effort (latency) and structural complexity (output length) for every generation, aggregate them into a |Ψ_Network.Q_Score.Total⟩, and synchronise the metrics instantly across peers.
+- **Ethical gatekeeper** – the Ψ_Ethics Keeper screens completions locally before they reach the console, maintaining responsible imagination loops.
+- **Persistent console** – all turns are stored in `localStorage`. "Purge Memory" clears the log entirely on-device.
+- **Responsive, glassmorphism UI** – engineered for desktops and touch devices alike.
 
 ## Getting Started
 
+Install dependencies and launch the Vite development server:
+
 ```bash
 npm install
-```
-
-### Run the Hugging Face bridge
-
-```bash
-HUGGING_FACE_API_KEY=your_key npm run server
-```
-
-Optionally set `HUGGING_FACE_MODEL` (defaults to `gpt2`). The server listens on port `4000` by default.
-
-### Launch the interface
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) and start prompting. The Vite dev server proxies `/api` to the local Express bridge.
+The first generation will fetch ~300 MB of model weights from the CDN. Subsequent prompts reuse the cached pipeline.
 
-### Run the microsoft/UserLM-8b local sample
+Open [http://localhost:5173](http://localhost:5173) to interface with the node.
 
-For explorers with a GPU-capable environment and the [Hugging Face `transformers`](https://github.com/huggingface/transformers) library installed, we provide a standalone script that mirrors the Imagination Network conversation flow while running everything locally.
-
-```bash
-python docs/examples/userlm_special_sequence.py
-```
-
-The script loads `microsoft/UserLM-8b`, applies the chat template used in the project, and samples a short completion while preventing the special `<|endconversation|>` token from appearing mid-stream.
-
-### Build for production
+## Production build
 
 ```bash
 npm run build
 ```
 
-This runs the TypeScript checker and produces static assets in `dist/`.
+Generates the static assets in `dist/`.
 
-### Sample the microsoft/UserLM-8b model locally
+## Architecture notes
 
-Install the Python dependencies in your preferred environment and run the helper script:
+- `src/lib/generation.ts` lazily injects the `transformers.js` runtime from jsDelivr, constructs the FLAN-T5 pipeline, and exposes a single `generateLocally` helper used throughout the app.
+- `src/lib/metrics.ts` defines the quantum stability scoring system shared by the UI and mesh.
+- `src/components/PeerMesh.tsx` manages WebRTC offer/answer creation, the manual signalling workflow, and peer metric synchronisation over a data channel.
+- `src/components/AgentDocs.tsx` reflects live Q-Score and the most recent metric snapshot alongside descriptive lore for each agent.
 
-```bash
-pip install torch transformers
-python scripts/userlm_sequence.py --device cuda
-```
+## Manual WebRTC flow
 
-The script reproduces the system prompt shared in the repository issues and blocks `<|endconversation|>` tokens so the generated description of the sequence stays focused. Override `--model-path`, `--top-p`, `--temperature`, or `--max-new-tokens` to experiment with different settings.
+1. Click **Create Offer** to generate a local SDP blob. Share it manually with a remote explorer.
+2. The remote node pastes the offer, collapses it into an answer, and returns that SDP blob.
+3. Paste the answer into the local node and bind it. Once the channel opens, generation metrics are exchanged automatically.
 
-## Environment variables
-
-- `HUGGING_FACE_API_KEY` (required) – personal token used against the Hugging Face REST inference endpoint.
-- `HUGGING_FACE_MODEL` (optional) – override the default model.
-- `PORT` (optional) – customize the server port.
-
-## Project structure
+## Repository structure
 
 ```
 ├── docs
 │   ├── ImaginationAgents.md
 │   └── NeuTTSAir.md
-├── server
-│   └── index.js
+├── public
 ├── src
 │   ├── App.tsx
 │   ├── components
@@ -86,15 +61,19 @@ The script reproduces the system prompt shared in the repository issues and bloc
 │   ├── hooks
 │   │   └── useImaginationLog.ts
 │   ├── lib
-│   │   └── api.ts
+│   │   ├── api.ts
+│   │   ├── ethics.ts
+│   │   ├── generation.ts
+│   │   └── metrics.ts
+│   ├── main.tsx
 │   └── styles
 │       └── global.css
 ├── index.html
-└── package.json
+├── package.json
+└── vite.config.ts
 ```
 
-## Agent reference
+## Additional references
 
-Refer to [`docs/ImaginationAgents.md`](docs/ImaginationAgents.md) for detailed agent responsibilities and operational flow.
-
-For on-device speech synthesis inspiration, see the condensed field guide for Neuphonic's voice model in [`docs/NeuTTSAir.md`](docs/NeuTTSAir.md).
+- [`docs/ImaginationAgents.md`](docs/ImaginationAgents.md) – extended agent responsibilities and lore.
+- [`docs/NeuTTSAir.md`](docs/NeuTTSAir.md) – condensed guide for Neuphonic's vocal agent inspiration.
