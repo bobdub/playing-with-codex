@@ -3,38 +3,66 @@
 |Ψ_Objective⟩ = |Ψ_Function(design⊗implement⊗validate).operating_system⟩ ⊗ |Ψ_Constraint(real_hardware⊗ethical_alignment).observe⟩;
 
 ⊗ |Ψ_Phase(0).Foundation⟩ = {
-    |Ψ_Task("Assemble Dream Team").define⟩ = |Ψ_Roles(kernel_architect⊗systems_engineer⊗toolsmith⊗ethics_steward).entangle⟩,
-    |Ψ_Task("Establish Knowledge Base").define⟩ = |Ψ_Link(docs/Knowledge.|Ψ).ingest⟩ ⊗ |Ψ_Terminal(repository).seed⟩,
-    |Ψ_Task("Toolchain Calibration").define⟩ = |Ψ_Select(compilers⊗debuggers⊗emulators).validate⟩ ⊗ |Ψ_Script(CI).bootstrap⟩,
-    |Ψ_Task("Resonance Charter").define⟩ = |Ψ_Ethics(embers).align⟩ ⊗ |Ψ_Q(magic).threshold(0.975).commit⟩
+    |Ψ_Task("Assemble Dream Team").define⟩ = |Ψ_Roles(kernel_architect⊗systems_engineer⊗toolsmith⊗ethics_steward).entangle⟩ ⊗ |Ψ_Cadence(sync_weekly).schedule⟩,
+    |Ψ_Task("Establish Knowledge Base").define⟩ = |Ψ_Link(docs/Knowledge.|Ψ).ingest⟩ ⊗ |Ψ_Terminal(repository).seed⟩ ⊗ |Ψ_Index(taxonomy).publish⟩,
+    |Ψ_Task("Toolchain Calibration").define⟩ = |Ψ_Select(compilers⊗debuggers⊗emulators).validate⟩ ⊗ |Ψ_Script(CI).bootstrap⟩ ⊗ |Ψ_Audit(reproducibility).record⟩,
+    |Ψ_Task("Resonance Charter").define⟩ = |Ψ_Ethics(embers).align⟩ ⊗ |Ψ_Q(magic).threshold(0.975).commit⟩ ⊗ |Ψ_Review(signatories).archive⟩
+};
+
+⊗ |Ψ_Phase(0).Milestones⟩ = {
+    |Ψ_Milestone(0.0a).criterion⟩ = |Ψ_Document(roles⊗responsibilities).ratify⟩,
+    |Ψ_Milestone(0.0b).criterion⟩ = |Ψ_Infrastructure(knowledge_base).online⟩ ⊗ |Ψ_Signal(availability≥0.99).monitor⟩,
+    |Ψ_Milestone(0.0c).criterion⟩ = |Ψ_Toolchain(release_tag).lock⟩ ⊗ |Ψ_Log(environment_manifest).persist⟩
 };
 
 ⊗ |Ψ_Phase(1).Bootstrapping⟩ = {
-    |Ψ_Task("Bootloader MVP").define⟩ = |Ψ_Link(docs/Bootloader.|Ψ).prototype⟩ ⊗ |Ψ_Test(power_on⊗reset).loop⟩,
-    |Ψ_Task("Kernel Skeleton").define⟩ = |Ψ_Link(docs/KernelCore.|Ψ).instantiate⟩ ⊗ |Ψ_Primitives(gdt⊗idt⊗paging).stabilize⟩,
-    |Ψ_Task("Hardware Abstraction").define⟩ = |Ψ_Device(map).document⟩ ⊗ |Ψ_Interface(minimal_drivers).craft⟩,
-    |Ψ_Task("Dream Memory Garden").define⟩ = |Ψ_Link(docs/MemoryGarden.|Ψ).implement⟩ ⊗ |Ψ_Metric(latency⊗integrity).measure⟩
+    |Ψ_Task("Bootloader MVP").define⟩ = |Ψ_Link(docs/Bootloader.|Ψ).prototype⟩ ⊗ |Ψ_Test(power_on⊗reset).loop⟩ ⊗ |Ψ_Log(boot_trace).capture⟩,
+    |Ψ_Task("Kernel Skeleton").define⟩ = |Ψ_Link(docs/KernelCore.|Ψ).instantiate⟩ ⊗ |Ψ_Primitives(gdt⊗idt⊗paging).stabilize⟩ ⊗ |Ψ_Formal(spec).draft⟩,
+    |Ψ_Task("Hardware Abstraction").define⟩ = |Ψ_Device(map).document⟩ ⊗ |Ψ_Interface(minimal_drivers).craft⟩ ⊗ |Ψ_Simulator(matrix).extend⟩,
+    |Ψ_Task("Dream Memory Garden").define⟩ = |Ψ_Link(docs/MemoryGarden.|Ψ).implement⟩ ⊗ |Ψ_Metric(latency⊗integrity).measure⟩ ⊗ |Ψ_Buffer(recovery_paths).verify⟩
+};
+
+⊗ |Ψ_Phase(1).Readiness⟩ = {
+    |Ψ_Gate("ColdBoot.green").condition⟩ = |Ψ_TestSuite(power_on⊗reset).pass_rate≥0.9⟩,
+    |Ψ_Gate("MemorySeeds.green").condition⟩ = |Ψ_Checkpoint(memory_integrity⊗snapshot_restore).verified⟩,
+    |Ψ_Gate("ToolingSync.green").condition⟩ = |Ψ_Agent(toolsmith).signoff⟩
 };
 
 ⊗ |Ψ_Phase(2).Ecosystem⟩ = {
-    |Ψ_Task("Scheduler Weave").define⟩ = |Ψ_Process(policy_round_robin⊗priority).experiment⟩ ⊗ |Ψ_Feedback(loop).refine⟩,
-    |Ψ_Task("I/O Prism Expansion").define⟩ = |Ψ_Channel(console⊗storage⊗network).extend⟩ ⊗ |Ψ_Terminal(streams).harmonize⟩,
-    |Ψ_Task("Userland Seeds").define⟩ = |Ψ_Bundle(shell⊗utilities⊗package_manager).grow⟩,
-    |Ψ_Task("Security Lattice").define⟩ = |Ψ_Policy(access_control⊗isolation⊗auditing).deploy⟩ ⊗ |Ψ_Ethics(contrast).verify⟩
+    |Ψ_Task("Scheduler Weave").define⟩ = |Ψ_Process(policy_round_robin⊗priority).experiment⟩ ⊗ |Ψ_Feedback(loop).refine⟩ ⊗ |Ψ_Telemetry(wait_times⊗cpu_load).stream⟩,
+    |Ψ_Task("I/O Prism Expansion").define⟩ = |Ψ_Channel(console⊗storage⊗network).extend⟩ ⊗ |Ψ_Terminal(streams).harmonize⟩ ⊗ |Ψ_Queue(thruput).profile⟩,
+    |Ψ_Task("Userland Seeds").define⟩ = |Ψ_Bundle(shell⊗utilities⊗package_manager).grow⟩ ⊗ |Ψ_Docs(getting_started).draft⟩,
+    |Ψ_Task("Security Lattice").define⟩ = |Ψ_Policy(access_control⊗isolation⊗auditing).deploy⟩ ⊗ |Ψ_Ethics(contrast).verify⟩ ⊗ |Ψ_Test(threat_model).iterate⟩
+};
+
+⊗ |Ψ_Phase(2).Dependencies⟩ = {
+    |Ψ_Dependency("Scheduler Weave"↔"Dream Memory Garden").couple⟩ = |Ψ_Interface(queue_api).stabilize⟩,
+    |Ψ_Dependency("Security Lattice"↔"Kernel Skeleton").couple⟩ = |Ψ_Check(policy_hooks).trace⟩
 };
 
 ⊗ |Ψ_Phase(3).ResonanceTesting⟩ = {
-    |Ψ_Task("Continuous Integration").define⟩ = |Ψ_Pipeline(unit⊗integration⊗hardware_in_loop).orchestrate⟩,
-    |Ψ_Task("Resonance Monitor").define⟩ = |Ψ_Link(docs/OS.|Ψ).extend⟩ ⊗ |Ψ_Q(score).stream⟩,
-    |Ψ_Task("Reliability Trials").define⟩ = |Ψ_Scenario(stress⊗fault_injection⊗long_haul).simulate⟩,
-    |Ψ_Task("Ethical Review Board").define⟩ = |Ψ_Ethics(oversight).audit⟩ ⊗ |Ψ_Report(transparency).publish⟩
+    |Ψ_Task("Continuous Integration").define⟩ = |Ψ_Pipeline(unit⊗integration⊗hardware_in_loop).orchestrate⟩ ⊗ |Ψ_Alerting(flaky_tests).surface⟩,
+    |Ψ_Task("Resonance Monitor").define⟩ = |Ψ_Link(docs/OS.|Ψ).extend⟩ ⊗ |Ψ_Q(score).stream⟩ ⊗ |Ψ_Dashboard(real_time).render⟩,
+    |Ψ_Task("Reliability Trials").define⟩ = |Ψ_Scenario(stress⊗fault_injection⊗long_haul).simulate⟩ ⊗ |Ψ_Logbook(incident_response).rehearse⟩,
+    |Ψ_Task("Ethical Review Board").define⟩ = |Ψ_Ethics(oversight).audit⟩ ⊗ |Ψ_Report(transparency).publish⟩ ⊗ |Ψ_Feedback(loop).close⟩
+};
+
+⊗ |Ψ_Phase(3).Metrics⟩ = {
+    |Ψ_Metric("MTTR").define⟩ = |Ψ_Threshold(<4h).guard⟩,
+    |Ψ_Metric("Resonance Drift").define⟩ = |Ψ_Threshold(≤0.02).monitor⟩,
+    |Ψ_Metric("TestCoverage").define⟩ = |Ψ_Threshold(≥0.85).verify⟩
 };
 
 ⊗ |Ψ_Phase(4).Release⊗Evolution⟩ = {
-    |Ψ_Task("Launch Candidate").define⟩ = |Ψ_Terminal(beta_program).ignite⟩ ⊗ |Ψ_User(feedback).ingest⟩,
-    |Ψ_Task("Documentation Prism").define⟩ = |Ψ_Scribe(api⊗architecture⊗playbooks).render⟩,
-    |Ψ_Task("Community Entanglement").define⟩ = |Ψ_Entity(contributors).onboard⟩ ⊗ |Ψ_Process(governance).stabilize⟩,
-    |Ψ_Task("Evolution Spiral").define⟩ = |Ψ_Dream(backlog).prioritize⟩ ⊗ |Ψ_OS(update).release_cycle⟩
+    |Ψ_Task("Launch Candidate").define⟩ = |Ψ_Terminal(beta_program).ignite⟩ ⊗ |Ψ_User(feedback).ingest⟩ ⊗ |Ψ_Channel(feedback_loop).automate⟩,
+    |Ψ_Task("Documentation Prism").define⟩ = |Ψ_Scribe(api⊗architecture⊗playbooks).render⟩ ⊗ |Ψ_Accessibility(a11y).validate⟩,
+    |Ψ_Task("Community Entanglement").define⟩ = |Ψ_Entity(contributors).onboard⟩ ⊗ |Ψ_Process(governance).stabilize⟩ ⊗ |Ψ_Portal(contribution_guides).launch⟩,
+    |Ψ_Task("Evolution Spiral").define⟩ = |Ψ_Dream(backlog).prioritize⟩ ⊗ |Ψ_OS(update).release_cycle⟩ ⊗ |Ψ_Metric(velocity).review⟩
+};
+
+⊗ |Ψ_Phase(4).Cadence⟩ = {
+    |Ψ_Cycle("Release Rhythm").define⟩ = |Ψ_Period(6_weeks).commit⟩,
+    |Ψ_Cycle("Retrospective").define⟩ = |Ψ_Period(2_weeks).reflect⟩ ⊗ |Ψ_Action(improvement_items).enact⟩
 };
 
 ⊗ |Ψ_Milestones⟩ = [
@@ -50,6 +78,26 @@
     |Ψ_Risk("Resonance Drift").observe⟩ → |Ψ_Mitigation(ethics_engine_feedback⊗Q_score_alerts).calibrate⟩,
     |Ψ_Risk("Talent Attrition").observe⟩ → |Ψ_Mitigation(knowledge_base⊗mentorship⊗joy).nurture⟩,
     |Ψ_Risk("Security Regression").observe⟩ → |Ψ_Mitigation(formal_verification⊗continuous_audit).sustain⟩
+};
+
+⊗ |Ψ_Resource.Matrix⟩ = {
+    |Ψ_Stream("Core Team").allocate⟩ = |Ψ_Ratio(engineering:ethics:community = 5:2:1).maintain⟩,
+    |Ψ_Stream("Hardware Lab").allocate⟩ = |Ψ_Inventory(rigs⊗emulators⊗power_budgets).balance⟩,
+    |Ψ_Stream("Dream Credits").allocate⟩ = |Ψ_Budget(time_blocks⊗innovation_days).reserve⟩
+};
+
+⊗ |Ψ_Timeline.Overview⟩ = {
+    |Ψ_Window(Phase0).duration⟩ = |Ψ_Interval(weeks_0_to_3).map⟩,
+    |Ψ_Window(Phase1).duration⟩ = |Ψ_Interval(weeks_4_to_10).map⟩,
+    |Ψ_Window(Phase2).duration⟩ = |Ψ_Interval(weeks_11_to_20).map⟩,
+    |Ψ_Window(Phase3).duration⟩ = |Ψ_Interval(weeks_21_to_30).map⟩,
+    |Ψ_Window(Phase4).duration⟩ = |Ψ_Interval(weeks_31_to_42).map⟩
+};
+
+⊗ |Ψ_Communication.Protocol⟩ = {
+    |Ψ_Channel(sync).cadence⟩ = |Ψ_Ceremony(weekly_resonance).host⟩,
+    |Ψ_Channel(async).cadence⟩ = |Ψ_Broadcast(status_updates⊗dashboards).stream⟩,
+    |Ψ_Channel(emergency).cadence⟩ = |Ψ_Ping(incident_bridge).respond≤15min⟩
 };
 
 ⊗ |Ψ_Success.Criteria⟩ = |Ψ_OS("Aurora").Resonance⟩ ≥ 0.98 ⊗ |Ψ_User(joy).signal⟩ ⊗ |Ψ_Ethics(stewardship).affirm⟩;
