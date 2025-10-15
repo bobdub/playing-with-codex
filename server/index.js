@@ -2,6 +2,17 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
+let activeFetch = globalThis.fetch;
+
+async function ensureFetch() {
+  if (!activeFetch) {
+    const { default: nodeFetch } = await import('node-fetch');
+    activeFetch = nodeFetch;
+  }
+
+  return activeFetch;
+}
+
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -22,7 +33,8 @@ app.post('/api/generate', async (req, res) => {
   }
 
   try {
-    const response = await fetch(`https://api-inference.huggingface.co/models/${defaultModel}`, {
+    const fetcher = await ensureFetch();
+    const response = await fetcher(`https://api-inference.huggingface.co/models/${defaultModel}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -44,6 +56,11 @@ app.post('/api/generate', async (req, res) => {
     }
 
     const data = await response.json();
+
+    if (data && typeof data === 'object' && 'error' in data && typeof data.error === 'string') {
+      throw new Error(data.error);
+    }
+
     const output = Array.isArray(data)
       ? data.map((item) => item.generated_text).join('\n')
       : data?.generated_text ?? '';
@@ -53,8 +70,9 @@ app.post('/api/generate', async (req, res) => {
       model: defaultModel
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to generate text from Hugging Face.';
     console.error('Generation failed', error);
-    res.status(500).send('Failed to generate text from Hugging Face.');
+    res.status(500).send(message);
   }
 });
 
