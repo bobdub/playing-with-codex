@@ -27,11 +27,16 @@ def load_model(device: str | None = None):
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
 
     if device == "cuda":
-        model = model.to("cuda")
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_PATH,
+            trust_remote_code=True,
+            torch_dtype=torch.float16,
+            device_map="auto",
+        )
     else:
+        model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
         model = model.to("cpu")
 
     return tokenizer, model, device
