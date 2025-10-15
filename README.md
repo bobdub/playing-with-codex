@@ -34,6 +34,32 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) and start prompting. The Vite dev server proxies `/api` to the local Express bridge.
 
+### Run both servers in parallel
+
+1. **Prepare two terminals.** Open one terminal window for the backend and a second for the frontend so both processes can run simultaneously.
+2. **Start the Hugging Face bridge.** In the first terminal, set your API key and launch the Express server:
+
+   ```bash
+   HUGGING_FACE_API_KEY=your_key npm run server
+   ```
+
+   On Windows PowerShell, use:
+
+   ```powershell
+   setx HUGGING_FACE_API_KEY "your_key"
+   npm run server
+   ```
+
+   (Or run `set HUGGING_FACE_API_KEY=your_key` followed by `npm run server` in the same Command Prompt session.) Leave this terminal running— it will listen on port `4000`.
+3. **Start the Vite dev server.** In the second terminal, run:
+
+   ```bash
+   npm run dev
+   ```
+
+   Keep this process running as well; it serves the React UI on port `5173` and proxies API calls to the backend.
+4. **Open the app in your browser.** Visit [http://localhost:5173](http://localhost:5173) while both terminals stay open. The UI will now connect to the running backend through the `/api` proxy.
+
 ### Run the microsoft/UserLM-8b local sample
 
 For explorers with a GPU-capable environment and the [Hugging Face `transformers`](https://github.com/huggingface/transformers) library installed, we provide a standalone script that mirrors the Imagination Network conversation flow while running everything locally.
