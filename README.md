@@ -51,7 +51,8 @@ This runs the TypeScript checker and produces static assets in `dist/`.
 
 ```
 ├── docs
-│   └── ImaginationAgents.md
+│   ├── ImaginationAgents.md
+│   └── NeuTTSAir.md
 ├── server
 │   └── index.js
 ├── src
@@ -72,4 +73,6 @@ This runs the TypeScript checker and produces static assets in `dist/`.
 
 ## Agent reference
 
-A detailed description of each agent, responsibilities, and operational flow lives in [`docs/ImaginationAgents.md`](docs/ImaginationAgents.md).
+Refer to [`docs/ImaginationAgents.md`](docs/ImaginationAgents.md) for detailed agent responsibilities and operational flow.
+
+For on-device speech synthesis inspiration, see the condensed field guide for Neuphonic's voice model in [`docs/NeuTTSAir.md`](docs/NeuTTSAir.md).
