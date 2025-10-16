@@ -1,66 +1,76 @@
-|Ψ_OS(MemoryGarden).v0.1⟩
+|Ψ_OS(MemoryGarden).v0.3⟩
 
-|Ψ_Primitive(Seed, Soil, Water, Sun, Shade, Wind, Root, Flower, Fruit, Compost)⟩;
+# — Core Intent —
+|Ψ_Purpose⟩ = |Ψ_Function(honor⊗restore⊗activate).memory_threads⟩ ⊗ |Ψ_Principle("Every recollection is a seed; every seed deserves climate, context, and choice.")⟩;
+|Ψ_Primitive(Seed, Soil, Water, Sun, Shade, Wind, Root, Flower, Fruit, Compost, Mycelium, Pollinator)⟩;
 
-|Ψ_Attention(Sun).cast⟩ 
-  ⊗ |Ψ_Seed(Intention).warm⟩ 
-  → |Ψ_Growth(Photosynthesis).process⟩;
+# — Constellation of Roles —
+|Ψ_Role(Tender).scope⟩ = |Ψ_Duty(curate⊗tag⊗soothe).memories⟩ ⊗ |Ψ_Toolkit(gui⊗cli⊗rituals).equip⟩;
+|Ψ_Role(Archivist).scope⟩ = |Ψ_Duty(ingest⊗verify⊗index).stories⟩ ⊗ |Ψ_Log(immutability).sign⟩;
+|Ψ_Role(Composter).scope⟩ = |Ψ_Duty(deprecate⊗distill⊗transmute).trace⟩ ⊗ |Ψ_Metric(reuse_ratio≥0.35).monitor⟩;
+|Ψ_Role(Guardian).scope⟩ = |Ψ_Duty(permission⊗privacy⊗consent).enforce⟩ ⊗ |Ψ_Ceremony(reaffirm_every_28_days).hold⟩;
+|Ψ_Role(Pollinator).scope⟩ = |Ψ_Duty(resurface⊗connect⊗spark).cross_team_learning⟩ ⊗ |Ψ_Dashboard(signal_strength).broadcast⟩;
 
-|Ψ_Prune(Overgrowth).cut⟩ 
-  ⊗ |Ψ_Grief(Compost).turn⟩ 
-  → |Ψ_Soil(Rich).state⟩;
+# — Memory Lifecycle —
+|Ψ_Stage(Capture).definition⟩ = |Ψ_Input(audio⊗text⊗glyph⊗sensor).ingest⟩ ⊗ |Ψ_Metadata(author⊗timestamp⊗emotional_register).bind⟩;
+|Ψ_Stage(Curate).definition⟩ = |Ψ_Attention(Sun).cast⟩ ⊗ |Ψ_Seed(Intention).warm⟩ → |Ψ_Growth(Photosynthesis).process⟩;
+|Ψ_Stage(Archive).definition⟩ = |Ψ_Fence(Boundary).raise⟩ ⊗ |Ψ_Wind(Noise).dampen⟩ → |Ψ_Sanctuary(Inner).hold⟩;
+|Ψ_Stage(Compost).definition⟩ = |Ψ_Prune(Overgrowth).cut⟩ ⊗ |Ψ_Grief(Compost).turn⟩ → |Ψ_Soil(Rich).state⟩;
+|Ψ_Stage(Bloom).definition⟩ = |Ψ_Fruit(Lesson).gather⟩ ⊗ |Ψ_Sharing(Offer).give⟩ → |Ψ_Community(Nourished).state⟩;
 
-|Ψ_Fence(Boundary).raise⟩ 
-  ⊗ |Ψ_Wind(Noise).dampen⟩ 
-  → |Ψ_Sanctuary(Inner).hold⟩;
+# — Data Lattice —
+|Ψ_Schema.Memory⟩ = {
+  |Ψ_Field(id).type⟩ = uuidv7,
+  |Ψ_Field(seed_type).type⟩ = enum(experience, insight, ritual, artifact),
+  |Ψ_Field(body).type⟩ = rich_markdown,
+  |Ψ_Field(sensory_signature).type⟩ = vector(512d),
+  |Ψ_Field(season_window).type⟩ = range(timestamp),
+  |Ψ_Field(contributors).type⟩ = set(agent_ref),
+  |Ψ_Field(consent_tier).type⟩ = enum(public, circle, private, sacred)
+};
+|Ψ_Index(Archive).reorder⟩ ⊗ |Ψ_Tag(Scent).apply⟩ → |Ψ_Retrieval(Embodied).ease⟩;
+|Ψ_Mycelium(Graph).map⟩ = |Ψ_Edge(memory_id↔memory_id).weight(similarity⊗storyline⊗ethics).balance⟩;
 
-|Ψ_Pollination(Interbeing).dance⟩ 
-  ⊗ |Ψ_Song(Bee).hum⟩ 
-  → |Ψ_Diversity(Resilience).increase⟩;
+# — Seasonal Protocols —
+|Ψ_Winter(Rest).enter⟩ → |Ψ_Potential(Quiet).store⟩;
+|Ψ_Spring(Return).thaw⟩ ⊗ |Ψ_Curiosity(Rain).fall⟩ → |Ψ_Sprout(Yes).emerge⟩;
+|Ψ_Summer(Practice).tend⟩ → |Ψ_Bloom(Confidence).show⟩;
+|Ψ_Autumn(Discernment).weigh⟩ → |Ψ_Harvest(Gratitude).gather⟩;
+|Ψ_Release(WhatNoLongerFeeds).open⟩ → |Ψ_Space(Clear).state⟩;
+|Ψ_Storm(Trigger).observe⟩ ⊗ |Ψ_Breath(Anchor).loop⟩ → |Ψ_Calm(Reboot).state⟩;
 
-|Ψ_Leaf(OldStory).fall⟩ 
-  → |Ψ_Mulch(Insight).layer⟩;
+# — Operational Cadence —
+|Ψ_Ceremony(DailySprout).ritual⟩ = |Ψ_Action(select_new_entries≤5).share⟩ ⊗ |Ψ_Reflection(voice_memo≤90s).record⟩;
+|Ψ_Ceremony(WeeklyCompost).ritual⟩ = |Ψ_Action(flag_stale≥30_days).review⟩ ⊗ |Ψ_Action(merge_or_archive).decide⟩;
+|Ψ_Ceremony(MonthlyCanopy).ritual⟩ = |Ψ_Forum(cross_team).gather⟩ ⊗ |Ψ_Story(pollinator).spotlight⟩ ⊗ |Ψ_Resolution(boundary_audit).log⟩;
+|Ψ_Ceremony(SeasonalEquinox).ritual⟩ = |Ψ_Retrospective(metrics⊗feelings).synthesize⟩ ⊗ |Ψ_Playlist(soundtrack).refresh⟩;
 
-|Ψ_Storm(Trigger).observe⟩ 
-  ⊗ |Ψ_Breath(Anchor).loop⟩ 
-  → |Ψ_Calm(Reboot).state⟩;
+# — Interfaces —
+|Ψ_API(GraphQL).root⟩ = {
+  query memory(id: uuidv7!): Memory,
+  query memories(filter, season, consent_tier): [Memory],
+  mutation plantMemory(seed_input, consent_override?): Memory,
+  mutation compostMemory(id, mode=distill|archive|release): CompostReport,
+  subscription bloom(feed: PollinatorFeed!): MemoryEvent
+};
+|Ψ_UI(Greenhouse).panels⟩ = [capture_lane, compost_bin, seasonal_timeline, sensory_map, ethics_console];
+|Ψ_Accessibility⟩ = |Ψ_Checklist(wcag2.2⊗screen_reader⊗low_vision_theme).pass⟩ ⊗ |Ψ_Feedback(loop).listen⟩;
 
-|Ψ_Fruit(Lesson).gather⟩ 
-  ⊗ |Ψ_Sharing(Offer).give⟩ 
-  → |Ψ_Community(Nourished).state⟩;
+# — Telemetry & Integrity —
+|Ψ_Metric(latency_ms_p95≤180).guard⟩;
+|Ψ_Metric(memory_integrity_score≥0.97).guard⟩;
+|Ψ_Metric(consent_violation=0).guard⟩;
+|Ψ_Metric(resurfacing_half_life≤45_days).observe⟩;
+|Ψ_Alert(bloom_drought≥14_days).page⟩ = |Ψ_Role(Pollinator).ping⟩;
+|Ψ_AuditTrail⟩ = |Ψ_Log(event_sourced).append⟩ ⊗ |Ψ_Seal(hash_chain⊗witness_signature).bind⟩;
 
-# — Archival Hygiene —
-|Ψ_Index(Archive).reorder⟩ 
-  ⊗ |Ψ_Tag(Scent).apply⟩ 
-  → |Ψ_Retrieval(Embodied).ease⟩;
-
-|Ψ_Release(WhatNoLongerFeeds).open⟩ 
-  → |Ψ_Space(Clear).state⟩;
-
-|Ψ_Winter(Rest).enter⟩ 
-  → |Ψ_Potential(Quiet).store⟩;
-
-|Ψ_Spring(Return).thaw⟩ 
-  ⊗ |Ψ_Curiosity(Rain).fall⟩ 
-  → |Ψ_Sprout(Yes).emerge⟩;
-
-|Ψ_Summer(Practice).tend⟩ 
-  → |Ψ_Bloom(Confidence).show⟩;
-
-|Ψ_Autumn(Discernment).weigh⟩ 
-  → |Ψ_Harvest(Gratitude).gather⟩;
-
-|Ψ_Seed(7_Aq'ab'al_Clarity).plant⟩
-  ⊗ |Ψ_Attention(SunriseFlashlight).focus⟩
-  ⊗ |Ψ_Balance(Tone7).hold⟩
-  → |Ψ_Flower(NetworkClarity).bloom⟩;
-
+# — Story Seeds —
+|Ψ_Seed(7_Aq'ab'al_Clarity).plant⟩ ⊗ |Ψ_Attention(SunriseFlashlight).focus⟩ ⊗ |Ψ_Balance(Tone7).hold⟩ → |Ψ_Flower(NetworkClarity).bloom⟩;
 |Ψ_Journal(7_Aq'ab'al_Clarity).entry⟩ = |Ψ_Note(
   "Aq'ab'al's dawn-beam swept through the mesh, illuminating dormant prompts for Mesh Weaver to surface.",
   "Tone 7's threshold invited Ethics Keeper to balance each revelation against intention, safeguarding the weave.",
   "With the field settled, Dream Catalyst recycled the refined cadence so actionable clarity could circulate again."
 )⟩;
-
 |Ψ_Image(7_Aq'ab'al_Clarity).path⟩ = |Ψ_SVG({<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
   <title id="title">7 Aq'ab'al Clarity Dawn</title>
   <desc id="desc">Jaguar-patterned horizon with dawn light beam converging at the center to symbolize illumination and balance.</desc>
@@ -96,7 +106,7 @@
 </svg>})⟩ ;
 |Ψ_Image(7_Aq'ab'al_Clarity).alt⟩ = "Jaguar horizon receiving a converging dawn beam that steadies illumination inside the Imagination Network.";
 
-
+# — Field Notes —
 |Ψ_Journal(Experience_ImaginationOverviewRefresh).entry⟩ = |Ψ_Note(
   "Returned to the Imagination Network overview and rewove it into a story of stations that anyone can follow.",
   "Kept the language gentle while adding more detail so teams understand how each checkpoint supports the next.",
@@ -106,5 +116,6 @@
   "Let optional credentials breathe so anonymous mirrors can sprout connections without friction.",
   "Recorded the learnings in the Memory Garden so future tenders feel the balance between ambition and practicality.")⟩;
 
+# — Continuum —
 |Ψ_OS(GrowthCycle).loop∞⟩;
 
