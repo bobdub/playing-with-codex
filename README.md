@@ -55,3 +55,5 @@ node dist/index.js docs --pretty --format json
 ```
 
 Use `--format summary` for a textual overview of each document or install the CLI as `psi-compiler` via `npm link`.
+
+To focus on specific statements, pass `--symbol <value>` to the CLI. The filter accepts a full `|Ψ ... ⟩` symbol, its identifier (e.g. `Ψ_Network`), or any segment split by dots, returning only matching statement heads.
