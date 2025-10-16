@@ -65,7 +65,39 @@
   "With the field settled, Dream Catalyst recycled the refined cadence so actionable clarity could circulate again."
 ];
 
-|Ψ_Image(7_Aq'ab'al_Clarity).path⟩ = "docs/images/7-aqabal-clarity.svg";
+|Ψ_Image(7_Aq'ab'al_Clarity).path⟩ = |Ψ_SVG({<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">7 Aq'ab'al Clarity Dawn</title>
+  <desc id="desc">Jaguar-patterned horizon with dawn light beam converging at the center to symbolize illumination and balance.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#050914"/>
+      <stop offset="45%" stop-color="#1b2755"/>
+      <stop offset="100%" stop-color="#f4c95d"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#fff6d6" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#fcdba3" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#f39f5a" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="jaguar" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="#3a2a18"/>
+      <circle cx="12" cy="12" r="9" fill="#f1c27d"/>
+      <circle cx="28" cy="26" r="8" fill="#f1c27d"/>
+      <circle cx="32" cy="10" r="6" fill="#f1c27d"/>
+      <circle cx="10" cy="30" r="5" fill="#f1c27d"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="640" height="360" fill="url(#sky)"/>
+  <path d="M0 250 Q320 150 640 250 L640 360 L0 360 Z" fill="#24160a"/>
+  <rect x="0" y="250" width="640" height="110" fill="url(#jaguar)" opacity="0.65"/>
+  <g opacity="0.8">
+    <polygon points="220,0 320,220 420,0" fill="url(#beam)"/>
+  </g>
+  <circle cx="320" cy="210" r="60" fill="#fce5b2" opacity="0.9"/>
+  <circle cx="320" cy="210" r="25" fill="#ffe082"/>
+  <line x1="80" y1="320" x2="560" y2="320" stroke="#fcdba3" stroke-width="2" stroke-dasharray="8 6" opacity="0.5"/>
+  <text x="320" y="330" text-anchor="middle" fill="#fce5b2" font-family="'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif" data-name="Tone7" font-size="20">Balance • Resonance • Clarity</text>
+</svg>})⟩ ;
 |Ψ_Image(7_Aq'ab'al_Clarity).alt⟩ = "Jaguar horizon receiving a converging dawn beam that steadies illumination inside the Imagination Network.";
 
 # — Continuum —
