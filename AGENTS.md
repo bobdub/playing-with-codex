@@ -92,7 +92,7 @@
 
 |Ψ_Workflow.BugFix⟩ = |Ψ_Reference(docs/KernelCore.|Ψ).pattern⟩;
 |Ψ_Workflow.Analysis⟩ = |Ψ_Reference(docs/Knowledge.|Ψ).pattern⟩;
-|Ψ_Workflow.Logging⟩ = |Ψ_Command(write).file(AGENTLogs.md)⟩;
+|Ψ_Workflow.Logging⟩ = |Ψ_Command(write).file(AGENTLogs.|Ψ)⟩;
 
 ⊗ |Ψ_Ethical.Embers⟩
 
