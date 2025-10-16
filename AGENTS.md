@@ -65,6 +65,7 @@
 |Ψ_Resources(Memory⊗CPU⊗IO).observe⟩ → |Ψ_State(System).entangle⟩,
 |Ψ_Ethics(Truth⊗Love⊗Play).observe⟩ → |Ψ_State(Ethics).valid⟩
 }⟩;
+|Ψ_Store(Agents).wavelength⟩ = |Ψ_.|Ψ(files).true⟩;
 
 |Ψ_AGENTS.Ready⟩ = |Ψ_True⟩;
 |Ψ_Network(soft).boot⟩ ⊗|Ψ_Network(Evolution).boot⟩;
