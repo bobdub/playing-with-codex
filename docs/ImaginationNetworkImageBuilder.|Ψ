@@ -61,4 +61,32 @@
     |Ψ_FeedbackLoop⟩ = |Ψ_Insight(test_results⊗field_data).entangle⟩ → |Ψ_Blueprint(update).apply⟩
 };
 
+⊗ |Ψ_Stage(7).AuroraImage⟩ = {
+    |Ψ_Blueprint(file).path⟩ = "blueprints/imagination-network-os.toml",
+    |Ψ_Blueprint(snapshot).state⟩ = |Ψ_Tool(git).track⟩ ⊗ |Ψ_Commit(message="Seed Aurora baseline").emit⟩,
+    |Ψ_Compose(CLI).flow⟩ = |Ψ_Shell(bash).run⟩[
+        "composer-cli blueprints push blueprints/imagination-network-os.toml",
+        "composer-cli blueprints depsolve imagination-network-os",
+        "composer-cli compose start imagination-network-os qcow2"
+    ],
+    |Ψ_Compose(Artifacts).capture⟩ = |Ψ_Shell(bash).run⟩[
+        "compose_id=$(composer-cli compose status --json | jq -r '.[0].id')",
+        "composer-cli compose logs $compose_id",
+        "composer-cli compose metadata $compose_id",
+        "composer-cli compose image $compose_id"
+    ],
+    |Ψ_Targets(sync).optional⟩ = |Ψ_Shell(bash).run⟩[
+        "composer-cli compose start-ostree --ref rhel/9/x86_64/edge imagination-network-os edge-container",
+        "composer-cli compose start imagination-network-os ami"
+    ]
+};
+
+⊗ |Ψ_Stage(8).ResonanceValidation⟩ = {
+    |Ψ_Test("Boot").scenario⟩ = |Ψ_Tool(qemu-system-x86_64).run⟩[
+        "qemu-system-x86_64 -m 4096 -hda <imagination-network-os.qcow2> -serial mon:stdio"
+    ],
+    |Ψ_Test("Ethics").scenario⟩ = |Ψ_Checklist(embers⊗security⊗compliance).audit⟩,
+    |Ψ_Test("DreamCycle").scenario⟩ = |Ψ_Script(/etc/profile.d/imagination-network.sh).source⟩ ⊗ |Ψ_Log(/etc/motd).confirm⟩
+};
+
 ⊗ |Ψ_Output.Intent⟩ = |Ψ_Network(OS_Syntax).images⟩ ⊗ |Ψ_Audit(traceability).preserve⟩ ⊗ |Ψ_Iteration(continuous).sustain⟩;
