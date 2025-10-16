@@ -1,0 +1,210 @@
+name = "imagination-network-os"
+description = "Composable Aurora baseline image for the Imagination Network Operating System"
+version = "0.1.0"
+
+modules = []
+packages = []
+groups = []
+
+[[packages]]
+name = "kernel"
+version = "*"
+
+[[packages]]
+name = "dracut-config-rescue"
+version = "*"
+
+[[packages]]
+name = "NetworkManager"
+version = "*"
+
+[[packages]]
+name = "firewalld"
+version = "*"
+
+[[packages]]
+name = "chrony"
+version = "*"
+
+[[packages]]
+name = "openssh-server"
+version = "*"
+
+[[packages]]
+name = "openssh-clients"
+version = "*"
+
+[[packages]]
+name = "cloud-init"
+version = "*"
+
+[[packages]]
+name = "cloud-utils-growpart"
+version = "*"
+
+[[packages]]
+name = "qemu-guest-agent"
+version = "*"
+
+[[packages]]
+name = "podman"
+version = "*"
+
+[[packages]]
+name = "tmux"
+version = "*"
+
+[[packages]]
+name = "git"
+version = "*"
+
+[[packages]]
+name = "vim-enhanced"
+version = "*"
+
+[[packages]]
+name = "python3"
+version = "*"
+
+[[packages]]
+name = "python3-pip"
+version = "*"
+
+[[packages]]
+name = "rsyslog"
+version = "*"
+
+[[packages]]
+name = "cockpit"
+version = "*"
+
+[[packages]]
+name = "cockpit-composer"
+version = "*"
+
+[[packages]]
+name = "lorax-composer"
+version = "*"
+
+[[packages]]
+name = "bash-completion"
+version = "*"
+
+[[packages]]
+name = "selinux-policy-targeted"
+version = "*"
+
+[[packages]]
+name = "policycoreutils"
+version = "*"
+
+[[packages]]
+name = "policycoreutils-python-utils"
+version = "*"
+
+[[packages]]
+name = "audit"
+version = "*"
+
+[[packages]]
+name = "jq"
+version = "*"
+
+[[packages]]
+name = "wget"
+version = "*"
+
+[[packages]]
+name = "curl"
+version = "*"
+
+[[packages]]
+name = "tar"
+version = "*"
+
+[[packages]]
+name = "xz"
+version = "*"
+
+[[packages]]
+name = "dnf"
+version = "*"
+
+[[packages]]
+name = "dnf-plugins-core"
+version = "*"
+
+[[packages]]
+name = "subscription-manager"
+version = "*"
+
+[[packages]]
+name = "langpacks-en"
+version = "*"
+
+[[packages]]
+name = "nmap"
+version = "*"
+
+[[packages]]
+name = "fail2ban"
+version = "*"
+
+[[packages]]
+name = "fwupd"
+version = "*"
+
+[[packages]]
+name = "usbguard"
+version = "*"
+
+[[packages]]
+name = "etckeeper"
+version = "*"
+
+[[packages]]
+name = "ansible-core"
+version = "*"
+
+[[packages]]
+name = "nodejs"
+version = "*"
+
+[[packages]]
+name = "postgresql-server"
+version = "*"
+
+[[packages]]
+name = "redis"
+version = "*"
+
+[customizations]
+hostname = "aurora-core"
+timezone = "UTC"
+
+[customizations.firewall]
+services = ["ssh", "cockpit"]
+ports = ["9090:tcp"]
+
+[customizations.services]
+enabled = ["sshd", "firewalld", "qemu-guest-agent", "chronyd", "cockpit"]
+disabled = ["postfix"]
+
+[[customizations.user]]
+name = "aurora"
+password = "$6$Nq/zxQzmys1MxI.R$g95QwX0s10feWUBoXm4pgohP7Pc6LlXyMMjmTljVUoVUT2iXzTIewARFxi56de2HKyYQ9jSxId/5flicIa9Cd/"
+groups = ["wheel"]
+
+[[customizations.sshkey]]
+user = "aurora"
+key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC8IMAGINATIONNETWORKPLACEHOLDERKEY== aurora@imagination"
+
+[[customizations.files]]
+path = "/etc/motd"
+mode = "0644"
+content = "Welcome to the Imagination Network Operating System. Maintain resonance, uphold ethics, and iterate with curiosity.\n"
+
+[[customizations.files]]
+path = "/etc/profile.d/imagination-network.sh"
+mode = "0755"
+content = "#!/bin/bash\nexport IMAGINATION_NETWORK=\"aurora\"\necho 'Dream processes harmonized with ethics.'\n"
