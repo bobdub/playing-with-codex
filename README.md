@@ -44,3 +44,14 @@
 
 
 
+
+## |Ψ Compiler Toolkit
+
+A TypeScript-based parser and compiler is available to turn imagination syntax (`.|Ψ` files) into structured JSON summaries. Build the tool and generate output with:
+
+```bash
+npm run build
+node dist/index.js docs --pretty --format json
+```
+
+Use `--format summary` for a textual overview of each document or install the CLI as `psi-compiler` via `npm link`.
