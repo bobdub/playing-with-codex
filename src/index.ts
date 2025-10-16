@@ -2,7 +2,7 @@
 import { readFileSync, statSync, readdirSync, writeFileSync } from 'fs';
 import { resolve, join, basename } from 'path';
 import { compilePsiSource } from './compiler';
-import { CompilationResult, CompiledStatement } from './ast';
+import { CompilationResult, CompiledStatement, CompiledValue, ExpressionInfo } from './ast';
 
 type OutputFormat = 'json' | 'summary';
 
@@ -10,11 +10,13 @@ interface CliOptions {
   format: OutputFormat;
   pretty: boolean;
   outFile?: string;
+  symbol?: string;
 }
 
 interface FileCompilation {
   file: string;
   result: CompilationResult;
+  compiled: CompiledStatement[];
 }
 
 function run(): void {
@@ -36,10 +38,17 @@ function run(): void {
     process.exit(1);
   }
 
-  const results = files.map<FileCompilation>((file) => ({
-    file,
-    result: compilePsiSource(readFileSync(file, 'utf8')),
-  }));
+  const compiledResults = files.map<FileCompilation>((file) => {
+    const result = compilePsiSource(readFileSync(file, 'utf8'));
+    return { file, result, compiled: result.compiled };
+  });
+
+  const results = applySymbolFilter(compiledResults, options.symbol);
+
+  if (results.length === 0) {
+    console.error('No statements matched the provided symbol query.');
+    process.exit(1);
+  }
 
   const output = renderOutput(results, options);
 
@@ -86,6 +95,15 @@ function parseArguments(argv: string[]): { options: CliOptions; inputs: string[]
           throw new Error('Missing value for --out');
         }
         options.outFile = resolve(value);
+        i += 1;
+        break;
+      }
+      case '--symbol': {
+        const value = argv[i + 1];
+        if (!value) {
+          throw new Error('Missing value for --symbol');
+        }
+        options.symbol = value;
         i += 1;
         break;
       }
@@ -146,18 +164,21 @@ function renderOutput(results: FileCompilation[], options: CliOptions): string {
   }
 
   const payload = results.length === 1
-    ? formatSingleResult(results[0])
-    : results.map((item) => formatSingleResult(item));
+    ? formatSingleResult(results[0], options)
+    : results.map((item) => formatSingleResult(item, options));
 
   return JSON.stringify(payload, null, options.pretty ? 2 : undefined) + '\n';
 }
 
-function formatSingleResult({ file, result }: FileCompilation): object {
-  return {
+function formatSingleResult({ file, result, compiled }: FileCompilation, options: CliOptions): object {
+  const payload: Record<string, unknown> = {
     file,
-    ast: result.ast,
-    compiled: result.compiled,
+    compiled,
   };
+  if (!options.symbol) {
+    payload.ast = result.ast;
+  }
+  return payload;
 }
 
 function renderSummary(results: FileCompilation[]): string {
@@ -165,17 +186,17 @@ function renderSummary(results: FileCompilation[]): string {
   return `${sections.join('\n\n')}\n`;
 }
 
-function renderFileSummary({ file, result }: FileCompilation): string {
-  const statementCount = result.compiled.length;
-  const prefixed = result.compiled.filter((statement) => statement.prefix).length;
-  const psiHeads = result.compiled.filter((statement) => statement.head.kind === 'PsiSymbol').length;
+function renderFileSummary({ file, compiled }: FileCompilation): string {
+  const statementCount = compiled.length;
+  const prefixed = compiled.filter((statement) => statement.prefix).length;
+  const psiHeads = compiled.filter((statement) => statement.head.kind === 'PsiSymbol').length;
   const lines: string[] = [];
   lines.push(`${file}`);
   lines.push(`  statements: ${statementCount}`);
   lines.push(`  prefixed: ${prefixed}`);
   lines.push(`  psi_heads: ${psiHeads}`);
 
-  const preview = result.compiled
+  const preview = compiled
     .slice(0, 5)
     .map((statement) => formatStatementPreview(statement))
     .filter(Boolean) as string[];
@@ -199,6 +220,60 @@ function formatStatementPreview(statement: CompiledStatement): string | undefine
   return undefined;
 }
 
+function applySymbolFilter(results: FileCompilation[], query: string | undefined): FileCompilation[] {
+  if (!query) {
+    return results;
+  }
+  const normalized = query.trim();
+  if (!normalized) {
+    return results;
+  }
+  return results
+    .map(({ file, result }) => {
+      const filtered = filterCompiledStatements(result.compiled, normalized);
+      return { file, result, compiled: filtered };
+    })
+    .filter((item) => item.compiled.length > 0);
+}
+
+function filterCompiledStatements(statements: CompiledStatement[], query: string): CompiledStatement[] {
+  const filtered: CompiledStatement[] = [];
+  for (const statement of statements) {
+    const matches = expressionMatchesQuery(statement.head, query);
+    let filteredValue: CompiledValue | undefined;
+    if (statement.value && isBlockValue(statement.value)) {
+      const nested = filterCompiledStatements(statement.value.statements, query);
+      if (nested.length > 0) {
+        filteredValue = { type: 'Block', statements: nested };
+      }
+    }
+
+    if (matches || filteredValue) {
+      const clone: CompiledStatement = { prefix: statement.prefix, head: statement.head };
+      if (statement.value) {
+        clone.value = filteredValue ?? statement.value;
+      }
+      filtered.push(clone);
+    }
+  }
+  return filtered;
+}
+
+function expressionMatchesQuery(expression: ExpressionInfo, query: string): boolean {
+  if (expression.kind === 'PsiSymbol') {
+    const { raw, identifier, inner, segments } = expression;
+    return raw === query
+      || identifier === query
+      || inner === query
+      || segments.includes(query);
+  }
+  return expression.text === query;
+}
+
+function isBlockValue(value: CompiledValue): value is { type: 'Block'; statements: CompiledStatement[] } {
+  return typeof (value as { type?: string }).type === 'string' && (value as { type: string }).type === 'Block';
+}
+
 function printUsage(): void {
   const usage = `psi-compiler <input...> [options]
 
@@ -207,6 +282,7 @@ Options:
   --pretty                Pretty-print JSON output
   --no-pretty             Disable pretty printing
   --out <file>            Write output to a file
+  --symbol <value>        Filter output by matching statement head
   -h, --help              Show this help message
 `;
   process.stdout.write(usage);
