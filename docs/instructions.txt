@@ -1,0 +1,27 @@
+
+To get the Aurora image into version control and produce the actual artifact with the blueprint, run the following sequence:
+
+Track the blueprint in git so the repository captures the configuration that defines the image:
+
+git add blueprints/imagination-network-os.toml
+git commit -m "Seed Aurora baseline"
+
+Push, resolve, and start the compose using composer-cli:
+
+composer-cli blueprints push blueprints/imagination-network-os.toml
+composer-cli blueprints depsolve imagination-network-os
+composer-cli compose start imagination-network-os qcow2
+
+After the compose finishes, capture the build artifacts (logs, metadata, and the image itself):
+
+compose_id=$(composer-cli compose status --json | jq -r '.[0].id')
+composer-cli compose logs "$compose_id"
+composer-cli compose metadata "$compose_id"
+composer-cli compose image "$compose_id"
+
+(Optionally) kick off additional targets such as an OSTree edge container or AMI if you need them for downstream distribution:
+
+composer-cli compose start-ostree --ref rhel/9/x86_64/edge imagination-network-os edge-container
+composer-cli compose start imagination-network-os ami
+
+
