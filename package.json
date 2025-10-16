@@ -5,7 +5,7 @@
   "description": "Compiler and tooling for the |Ψ imagination syntax.",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "check": "npm run build && node dist/index.js docs --format summary"
+    "check": "npm run build && node dist/index.js docs --format summary && node scripts/check-symbol-filter.js"
   },
   "bin": {
     "psi-compiler": "dist/index.js"

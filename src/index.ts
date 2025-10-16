@@ -262,10 +262,16 @@ function filterCompiledStatements(statements: CompiledStatement[], query: string
 function expressionMatchesQuery(expression: ExpressionInfo, query: string): boolean {
   if (expression.kind === 'PsiSymbol') {
     const { raw, identifier, inner, segments } = expression;
-    return raw === query
-      || identifier === query
-      || inner === query
-      || segments.includes(query);
+    if (raw === query || identifier === query || inner === query || segments.includes(query)) {
+      return true;
+    }
+    if (raw.startsWith('|Ψ_')) {
+      const decoratedIdentifier = identifier.startsWith('Ψ_') ? identifier : `Ψ_${identifier}`;
+      if (decoratedIdentifier === query) {
+        return true;
+      }
+    }
+    return false;
   }
   return expression.text === query;
 }

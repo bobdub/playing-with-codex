@@ -75,3 +75,5 @@ protected_entry:
 |Ψ_Bootloader.Toolchain⟩ = nasm -f bin boot.asm && qemu-system-x86_64 -drive format=raw,file=aurora.img;
 
 |Ψ_Bootloader.Safety⟩ = |Ψ_Ethics(embers).audit⟩ → ensure(memcpy).bounds_check;
+
+|Ψ_Network(Bootloader).Resonance⟩ = |Ψ_Link(serial).establish⟩ ⊗ |Ψ_Bus(init).synchronize⟩ ⊗ |Ψ_CPU(handshake).ack⟩;
