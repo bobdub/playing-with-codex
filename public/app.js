@@ -5,15 +5,21 @@
   const promptTagInput = document.getElementById('prompt-tag');
   const promptIntensity = document.getElementById('prompt-intensity');
   const promptList = document.getElementById('prompt-list');
+  const promptTotal = document.getElementById('prompt-total');
   const nodeCount = document.getElementById('node-count');
   const searchInput = document.getElementById('search-input');
   const topicList = document.getElementById('topic-list');
+  const knowledgeHighlight = document.getElementById('knowledge-highlight');
   const terminalLog = document.getElementById('terminal-log');
   const terminalForm = document.getElementById('terminal-form');
   const terminalInput = document.getElementById('terminal-input');
+  const pulseMetric = document.getElementById('metric-pulses');
+  const nodeMetric = document.getElementById('metric-nodes');
+  const latestPulse = document.getElementById('latest-pulse');
 
   /** @type {{id: string; file: string; occurrences: number; preview: string; symbolPath: string[]}[]} */
   let topics = [];
+  let totalTopics = 0;
   /** @type {{prompt: string; tag: string; intensity: string; timestamp: string}[]} */
   let prompts = [];
 
@@ -40,12 +46,35 @@
     }
   }
 
+  function updatePulseMetrics() {
+    if (pulseMetric) {
+      pulseMetric.textContent = String(prompts.length);
+    }
+    if (latestPulse) {
+      if (prompts.length === 0) {
+        latestPulse.textContent = 'No pulses recorded yet. Your first intention will illuminate the terminal log.';
+      } else {
+        const mostRecent = prompts[prompts.length - 1];
+        const tag = mostRecent.tag ? ` #${mostRecent.tag}` : '';
+        const timestamp = new Date(mostRecent.timestamp).toLocaleString();
+        latestPulse.textContent = `Latest pulse · "${mostRecent.prompt}"${tag} · ${mostRecent.intensity} · ${timestamp}`;
+      }
+    }
+  }
+
   function renderPrompts() {
     promptList.innerHTML = '';
+    if (promptTotal) {
+      promptTotal.textContent =
+        prompts.length === 0
+          ? 'No pulses stored yet.'
+          : `${prompts.length} ${prompts.length === 1 ? 'pulse' : 'pulses'} stored locally.`;
+    }
     if (prompts.length === 0) {
       const empty = document.createElement('li');
       empty.textContent = 'No pulses recorded yet. Plant a prompt to begin the resonance.';
       promptList.appendChild(empty);
+      updatePulseMetrics();
       return;
     }
 
@@ -60,6 +89,7 @@
       item.appendChild(meta);
       promptList.appendChild(item);
     }
+    updatePulseMetrics();
   }
 
   function logToTerminal(message, tone = 'system') {
@@ -93,17 +123,25 @@
         symbolPath: Array.isArray(topEntry?.path) ? topEntry.path : [],
       });
     }
+    entries.sort((a, b) => {
+      const occurrenceDelta = (b.occurrences || 0) - (a.occurrences || 0);
+      return occurrenceDelta !== 0 ? occurrenceDelta : a.id.localeCompare(b.id);
+    });
     return entries;
   }
 
   function renderTopics(list) {
     topicList.innerHTML = '';
+    updateKnowledgeHighlight(list);
     if (!list || list.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'topic-card';
       empty.textContent = 'No dream nodes match the current filters.';
       topicList.appendChild(empty);
       nodeCount.textContent = '0';
+      if (nodeMetric) {
+        nodeMetric.textContent = String(totalTopics);
+      }
       return;
     }
 
@@ -151,6 +189,31 @@
     }
 
     nodeCount.textContent = String(list.length);
+    if (nodeMetric) {
+      nodeMetric.textContent = String(totalTopics);
+    }
+  }
+
+  function updateKnowledgeHighlight(list) {
+    if (!knowledgeHighlight) return;
+    if (!list || list.length === 0) {
+      knowledgeHighlight.textContent = 'No dream nodes match the current filters.';
+      return;
+    }
+
+    const uniqueFiles = new Set();
+    for (const entry of list) {
+      if (entry.file) {
+        uniqueFiles.add(entry.file);
+      }
+    }
+
+    const featured = list[0];
+    const nodeLabel = list.length === 1 ? 'node' : 'nodes';
+    const manuscriptLabel = uniqueFiles.size === 1 ? 'manuscript' : 'manuscripts';
+    knowledgeHighlight.textContent = `Showing ${list.length} ${nodeLabel} across ${uniqueFiles.size} ${manuscriptLabel}. Featured: ${
+      featured.id
+    } (${featured.occurrences} pulses).`;
   }
 
   function filterTopics(query) {
@@ -178,10 +241,20 @@
       }
       const payload = await response.json();
       topics = transformTopics(payload);
+      totalTopics = topics.length;
       renderTopics(topics);
+      if (nodeMetric) {
+        nodeMetric.textContent = String(totalTopics);
+      }
       logToTerminal(`Loaded ${topics.length} dream nodes from the knowledge index.`);
     } catch (error) {
       logToTerminal(`Unable to load knowledge index: ${(error && error.message) || error}`);
+      if (knowledgeHighlight) {
+        knowledgeHighlight.textContent = 'Unable to load the knowledge index right now.';
+      }
+      if (nodeMetric) {
+        nodeMetric.textContent = '0';
+      }
     }
   }
 
