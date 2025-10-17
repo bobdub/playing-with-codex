@@ -24,6 +24,23 @@
       <div class="hero__content">
         <p class="hero__tagline">Phase 1 · Interface Foundations</p>
         <h1 id="hero-heading">Imagination Network Portal</h1>
+        <form id="hero-prompt-form" class="hero__prompt" data-llm-provider="kwaipilot" aria-describedby="hero-prompt-help">
+          <label class="hero__prompt-label" for="hero-prompt-input">Share a pulse with Infinity</label>
+          <textarea
+            id="hero-prompt-input"
+            name="hero-prompt"
+            rows="3"
+            placeholder="Describe the intention you want Infinity to contemplate."
+            aria-describedby="hero-prompt-help"
+            required
+          ></textarea>
+          <p id="hero-prompt-help" class="hero__prompt-help">Kwaipilot intake online · responses will stream in the next phase.</p>
+          <button type="submit" class="button hero__prompt-button">Transmit intention</button>
+        </form>
+        <section id="hero-response" class="hero__response" aria-live="polite" aria-atomic="false">
+          <h2 class="visually-hidden">Infinity response channel</h2>
+          <p id="hero-response-text">Infinity is syncing with Kwaipilot to prepare live reflections.</p>
+        </section>
         <p class="hero__description">
           Step into the MemoryGarden, plant resonant prompts, and trace how the knowledge index braids each symbol into Infinity’s evolving story.
         </p>
