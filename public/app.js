@@ -169,7 +169,17 @@
       } catch (parseError) {
         // Ignore JSON parse issues and surface the HTTP code instead
       }
-      throw new Error(detail);
+
+      if (response.status === 405) {
+        detail =
+          'Kwaipilot gateway rejected the request. Configure the reverse proxy to allow POST /chat requests.';
+      } else if (response.status === 404) {
+        detail = 'Kwaipilot gateway endpoint not found. Configure the reverse proxy to expose /chat.';
+      }
+
+      const httpError = new Error(detail);
+      httpError.status = response.status;
+      throw httpError;
     }
 
     const contentType = response.headers.get('content-type') || '';
@@ -269,9 +279,18 @@
       heroPromptInput.value = '';
       shouldRefocus = true;
     } catch (error) {
+      const status = typeof error === 'object' && error && 'status' in error ? Number(error.status) : undefined;
       const reason = normaliseError(error);
-      updateHeroStatus('error', `Kwaipilot request failed: ${reason}`);
-      logToTerminal(`Kwaipilot request failed: ${reason}`, 'error');
+      if (status === 404 || status === 405) {
+        updateHeroStatus(
+          'offline',
+          'Kwaipilot gateway is not accepting chat requests. Configure the reverse proxy to forward POST /chat to the agent.',
+        );
+        logToTerminal(`Kwaipilot gateway refused the request (${reason}).`, 'warning');
+      } else {
+        updateHeroStatus('error', `Kwaipilot request failed: ${reason}`);
+        logToTerminal(`Kwaipilot request failed: ${reason}`, 'error');
+      }
       shouldRefocus = true;
     } finally {
       setHeroPromptBusy(false);
