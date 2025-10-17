@@ -33,7 +33,7 @@ The canonical project plan lives in `docs/ProjectPlan.|Ψ`. The following table 
 
 | Phase / Task | Description | Status | Notes |
 | --- | --- | --- | --- |
-| **Phase 0 – Foundation** | Establish the conceptual and technical baseline. | **In Progress** | Core |Ψ manuscripts are present. Compiler toolchain exists. Ethics framing documented. Further validation and automation still needed. |
+| **Phase 0 – Foundation** | Establish the conceptual and technical baseline. | **Launched** | Dream Core assembled and weekly "dream resonance" sync cadence initiated. Core |Ψ manuscripts are present; further validation and automation still needed. |
 | ├─ Assemble Dream Core | Define the Dream, Ethics, Entity, and Q agents. | ✅ Complete | Manuscripts in `docs/Dreams.|Ψ`, `docs/Ethics.|Ψ`, `docs/Entity.|Ψ`, and `docs/Q.|Ψ`. |
 | ├─ Knowledge Repository | Seed and index the knowledge base. | ⚠️ Partially Done | Manuscripts exist, but indexing/search automation has not been implemented. |
 | ├─ Toolchain Initialization | Validate LLM/DSL pipeline and CI. | ✅ Complete | `src/` TypeScript compiler, CLI, and regression script exist; `npm run check` builds and validates output. |
