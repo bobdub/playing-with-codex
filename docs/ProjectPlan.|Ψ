@@ -4,26 +4,34 @@
 ⊗ |Ψ_Constraint(safety⊗ethics⊗creative_autonomy).preserve⟩;
 
 
-⊗ |Ψ_Phase(0).Launch⟩ = |Ψ_State(launched).timestamp("2024-04-12").notes("Dream Core assembled; weekly sync cadence initiated.")⟩;
+⊗ |Ψ_Phase(0).Launch⟩ = |Ψ_State(completed).timestamp("2024-04-12").notes("Dream Core assembled; weekly sync cadence initiated; CLI + knowledge index validated.")⟩;
 
 ⊗ |Ψ_Phase(0).Foundation⟩ = Ψ_{
     |Ψ_Task("Assemble Dream Core").define⟩ =
         |Ψ_Roles(architect⊗designer⊗philosopher⊗engineer⊗ethicist).entangle⟩
-        ⊗ |Ψ_Cadence(sync_weekly).schedule⟩,
+        ⊗ |Ψ_Cadence(sync_weekly).schedule⟩
+        ⊗ |Ψ_Status(completed).timestamp("2024-04-12").evidence(docs/Dreams.|Ψ⊗docs/Ethics.|Ψ⊗docs/Entity.|Ψ⊗docs/Q.|Ψ).record⟩
+        ⊗ |Ψ_Note("Dream Core manuscripts aligned; stewardship rotating across syncs.").capture⟩,
 
     |Ψ_Task("Knowledge Repository").define⟩ =
         |Ψ_Link(docs/ImaginationOS.|Ψ).seed⟩
-        ⊗ |Ψ_Index(dream_topics⊗quantum_laws⊗syntax_rules).publish⟩,
+        ⊗ |Ψ_Index(dream_topics⊗quantum_laws⊗syntax_rules).publish⟩
+        ⊗ |Ψ_Status(completed).timestamp("2024-04-12").evidence(docs/knowledge-index.json⊗docs/README.|Ψ).record⟩
+        ⊗ |Ψ_Note("Knowledge index regenerated via npm run build:index; surfaced in README translation table.").capture⟩,
 
     |Ψ_Task("Toolchain Initialization").define⟩ =
         |Ψ_Select(LLM_core⊗web_stack⊗quantum_emulator).validate⟩
         ⊗ |Ψ_Script(CI).bootstrap⟩
-        ⊗ |Ψ_Audit(transparency).record⟩,
+        ⊗ |Ψ_Audit(transparency).record⟩
+        ⊗ |Ψ_Status(completed).timestamp("2024-04-12").evidence(src/⊗scripts/check-ethics.js⊗README.md).record⟩
+        ⊗ |Ψ_Note("CLI build + regression guard accessible through npm run check.").capture⟩,
 
     |Ψ_Task("Ethical Charter").define⟩ =
         |Ψ_Ethics(embers).align⟩
         ⊗ |Ψ_Q(magic).threshold(0.975).commit⟩
         ⊗ |Ψ_Review(signatories).archive⟩
+        ⊗ |Ψ_Status(completed).timestamp("2024-04-12").evidence(docs/Ethics.|Ψ⊗scripts/check-ethics.js).record⟩
+        ⊗ |Ψ_Note("Automated charter validation wired into repository scripts.").capture⟩
 }⟩;
 
 ⊗ |Ψ_Phase(0).Milestones⟩ = Ψ_{
@@ -32,28 +40,51 @@
     |Ψ_M(0.3)⟩ = "Quantum emulator validated within Imagination environment."
 }⟩;
 
+⊗ |Ψ_Phase(0).Retrospective⟩ = Ψ_{
+    |Ψ_Win("CLI + manuscripts synchronize without drift.").record⟩,
+    |Ψ_Win("Knowledge index consumable via README translation tables.").record⟩,
+    |Ψ_Action("Document composer-cli pipeline before kernel automation expands.").track⟩
+}⟩;
+
 
 ⊗ |Ψ_Phase(1).Web_Interface⟩ = Ψ_{
     |Ψ_Task("Landing Portal").define⟩ =
         |Ψ_Interface(user_prompt).deploy⟩
         ⊗ |Ψ_UI(minimalist⊗interactive).design⟩
-        ⊗ |Ψ_Metric(accessibility≥0.95).measure⟩,
+        ⊗ |Ψ_Metric(accessibility≥0.95).measure⟩
+        ⊗ |Ψ_Status(discovery).timestamp("2024-04-12").owner("Aurora.UI").notes("Wireframes drafted; messaging sourced from README overview.").record⟩
+        ⊗ |Ψ_Backlog["Hero narrative + CTA copy","Prompt capture component","Accessibility audit checklist"].seed⟩,
 
     |Ψ_Task("Topic Explorer").define⟩ =
         |Ψ_Bind(topic:computer_science⊗philosophy⊗LLM).true⟩
         ⊗ |Ψ_Link(dream_nodes).navigate⟩
-        ⊗ |Ψ_Q(score).stream⟩,
+        ⊗ |Ψ_Q(score).stream⟩
+        ⊗ |Ψ_Status(planned).timestamp("2024-04-12").owner("Aurora.UI").notes("Waiting on knowledge index API contract.").record⟩
+        ⊗ |Ψ_Backlog["Define knowledge-index.json query adapter","Render dream node summaries","Surface resonance score chips"].seed⟩,
 
     |Ψ_Task("Neural Terminal").define⟩ =
         |Ψ_Emulator(imagination_network).launch⟩
         ⊗ |Ψ_Command(|Ψ_Brain(prompt).synthesize⟩).execute⟩
         ⊗ |Ψ_Log(conversation_threads).persist⟩
+        ⊗ |Ψ_Status(planned).timestamp("2024-04-12").owner("Aurora.CLI").notes("Discovery blocked until landing portal instrumentation finalizes.").record⟩
+        ⊗ |Ψ_Backlog["Design terminal session store","Bridge CLI execution logs","Prototype streaming output view"].seed⟩
 }⟩;
 
 ⊗ |Ψ_Phase(1).Milestones⟩ = Ψ_{
     |Ψ_M(1.0)⟩ = "Landing portal live with first user prompt session.",
     |Ψ_M(1.2)⟩ = "Topic explorer integrated with dream nodes.",
     |Ψ_M(1.4)⟩ = "Neural terminal prototype operational."
+}⟩;
+
+⊗ |Ψ_Phase(1).Kickoff⟩ = |Ψ_State(in_progress).timestamp("2024-04-12").owner("Interface.Guild").notes("Backlog seeded, design discovery underway, knowledge index contract drafted.")⟩;
+
+⊗ |Ψ_Phase(1).Sprint(α).Scope⟩ = Ψ_{
+    |Ψ_Objective("Establish UI foundation")⟩,
+    |Ψ_Deliverable("Static landing portal skeleton with prompt capture").target("2024-04-26")⟩,
+    |Ψ_Deliverable("Knowledge index adapter service exported for UI use").target("2024-04-26")⟩,
+    |Ψ_Deliverable("Design tokens + accessibility checklist drafted").target("2024-04-19")⟩,
+    |Ψ_Dependency("Topic Explorer"↔"Knowledge index adapter").align⟩,
+    |Ψ_Ceremony("Weekly dream resonance sync").retain⟩
 }⟩;
 
 ⊗ |Ψ_Phase(2).Dream_OS⟩ = Ψ_{

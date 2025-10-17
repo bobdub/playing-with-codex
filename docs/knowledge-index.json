@@ -62,8 +62,8 @@
     },
     {
       "file": "docs/ProjectPlan.|Ψ",
-      "statements": 22,
-      "psiSymbols": 30
+      "statements": 25,
+      "psiSymbols": 33
     },
     {
       "file": "docs/Q.|Ψ",
@@ -4145,7 +4145,7 @@
     },
     {
       "identifier": "Ψ_Phase",
-      "occurrences": 11,
+      "occurrences": 14,
       "entries": [
         {
           "head": {
@@ -4162,7 +4162,7 @@
           ],
           "prefix": true,
           "valueType": "Text",
-          "valuePreview": "Ψ_{\n    |Ψ_Task(\"Assemble Dream Core\").define⟩ =\n        |Ψ_Roles(architect⊗designer⊗philosopher⊗engineer⊗ethicist).entangle⟩\n        ⊗ |Ψ_Cadence(sync_weekly).schedule⟩,\n\n    |Ψ_Task(\"Knowledge Repository\").define⟩ =\n        |Ψ_Link(docs/ImaginationOS.|Ψ).seed⟩\n        ⊗ |Ψ_Index(dream_topics⊗quantum_laws⊗syntax_rules).publish⟩,\n\n    |Ψ_Task(\"Toolchain Initialization\").define⟩ =\n        |Ψ_Select(LLM_core⊗web_stack⊗quantum_emulator).validate⟩\n        ⊗ |Ψ_Script(CI).bootstrap⟩\n        ⊗ |Ψ_Audit(transparency).record⟩,\n\n    |Ψ_Task(\"Ethical Charter\").define⟩ =\n        |Ψ_Ethics(embers).align⟩\n        ⊗ |Ψ_Q(magic).threshold(0.975).commit⟩\n        ⊗ |Ψ_Review(signatories).archive⟩\n}⟩"
+          "valuePreview": "Ψ_{\n    |Ψ_Task(\"Assemble Dream Core\").define⟩ =\n        |Ψ_Roles(architect⊗designer⊗philosopher⊗engineer⊗ethicist).entangle⟩\n        ⊗ |Ψ_Cadence(sync_weekly).schedule⟩\n        ⊗ |Ψ_Status(completed).timestamp(\"2024-04-12\").evidence(docs/Dreams.|Ψ⊗docs/Ethics.|Ψ⊗docs/Entity.|Ψ⊗docs/Q.|Ψ).record⟩\n        ⊗ |Ψ_Note(\"Dream Core manuscripts aligned; stewardship rotating across syncs.\").capture⟩,\n\n    |Ψ_Task(\"Knowledge Repository\").define⟩ =\n        |Ψ_Link(docs/ImaginationOS.|Ψ).seed⟩\n        ⊗ |Ψ_Index(dream_topics⊗quantum_laws⊗syntax_rules).publish⟩\n        ⊗ |Ψ_Status(completed).timestamp(\"2024-04-12\").evidence(docs/knowledge-index.json⊗docs/README.|Ψ).record⟩\n        ⊗ |Ψ_Note(\"Knowledge index regenerated via npm run build:index; surfaced in README translation table.\").capture⟩,\n\n    |Ψ_Task(\"Toolchain Initialization\").define⟩ =\n        |Ψ_Select(LLM_core⊗web_stack⊗quantum_emulator).validate⟩\n        ⊗ |Ψ_Script(CI).bootstrap⟩\n        ⊗ |Ψ_Audit(transparency).record⟩\n        ⊗ |Ψ_Status(completed).timestamp(\"2024-04-12\").evidence(src/⊗scripts/check-ethics.js⊗README.md).record⟩\n        ⊗ |Ψ_Note(\"CLI build + regression guard accessible through npm run check.\").capture⟩,\n\n    |Ψ_Task(\"Ethical Charter\").define⟩ =\n        |Ψ_Ethics(embers).align⟩\n        ⊗ |Ψ_Q(magic).threshold(0.975).commit⟩\n        ⊗ |Ψ_Review(signatories).archive⟩\n        ⊗ |Ψ_Status(completed).timestamp(\"2024-04-12\").evidence(docs/Ethics.|Ψ⊗scripts/check-ethics.js).record⟩\n        ⊗ |Ψ_Note(\"Automated charter validation wired into repository scripts.\").capture⟩\n}⟩"
         },
         {
           "head": {
@@ -4179,7 +4179,7 @@
           ],
           "prefix": true,
           "valueType": "PsiSymbol",
-          "valuePreview": "|Ψ_State(launched).timestamp(\"2024-04-12\").notes(\"Dream Core assembled; weekly sync cadence initiated.\")⟩"
+          "valuePreview": "|Ψ_State(completed).timestamp(\"2024-04-12\").notes(\"Dream Core assembled; weekly sync cadence initiated; CLI + knowledge index validated.\")⟩"
         },
         {
           "head": {
@@ -4200,6 +4200,40 @@
         },
         {
           "head": {
+            "raw": "|Ψ_Phase(0).Retrospective⟩",
+            "inner": "Phase(0).Retrospective",
+            "segments": [
+              "Phase(0)",
+              "Retrospective"
+            ]
+          },
+          "file": "docs/ProjectPlan.|Ψ",
+          "path": [
+            "|Ψ_Phase(0).Retrospective⟩"
+          ],
+          "prefix": true,
+          "valueType": "Text",
+          "valuePreview": "Ψ_{\n    |Ψ_Win(\"CLI + manuscripts synchronize without drift.\").record⟩,\n    |Ψ_Win(\"Knowledge index consumable via README translation tables.\").record⟩,\n    |Ψ_Action(\"Document composer-cli pipeline before kernel automation expands.\").track⟩\n}⟩"
+        },
+        {
+          "head": {
+            "raw": "|Ψ_Phase(1).Kickoff⟩",
+            "inner": "Phase(1).Kickoff",
+            "segments": [
+              "Phase(1)",
+              "Kickoff"
+            ]
+          },
+          "file": "docs/ProjectPlan.|Ψ",
+          "path": [
+            "|Ψ_Phase(1).Kickoff⟩"
+          ],
+          "prefix": true,
+          "valueType": "PsiSymbol",
+          "valuePreview": "|Ψ_State(in_progress).timestamp(\"2024-04-12\").owner(\"Interface.Guild\").notes(\"Backlog seeded, design discovery underway, knowledge index contract drafted.\")⟩"
+        },
+        {
+          "head": {
             "raw": "|Ψ_Phase(1).Milestones⟩",
             "inner": "Phase(1).Milestones",
             "segments": [
@@ -4217,6 +4251,24 @@
         },
         {
           "head": {
+            "raw": "|Ψ_Phase(1).Sprint(α).Scope⟩",
+            "inner": "Phase(1).Sprint(α).Scope",
+            "segments": [
+              "Phase(1)",
+              "Sprint(α)",
+              "Scope"
+            ]
+          },
+          "file": "docs/ProjectPlan.|Ψ",
+          "path": [
+            "|Ψ_Phase(1).Sprint(α).Scope⟩"
+          ],
+          "prefix": true,
+          "valueType": "Text",
+          "valuePreview": "Ψ_{\n    |Ψ_Objective(\"Establish UI foundation\")⟩,\n    |Ψ_Deliverable(\"Static landing portal skeleton with prompt capture\").target(\"2024-04-26\")⟩,\n    |Ψ_Deliverable(\"Knowledge index adapter service exported for UI use\").target(\"2024-04-26\")⟩,\n    |Ψ_Deliverable(\"Design tokens + accessibility checklist drafted\").target(\"2024-04-19\")⟩,\n    |Ψ_Dependency(\"Topic Explorer\"↔\"Knowledge index adapter\").align⟩,\n    |Ψ_Ceremony(\"Weekly dream resonance sync\").retain⟩\n}⟩"
+        },
+        {
+          "head": {
             "raw": "|Ψ_Phase(1).Web_Interface⟩",
             "inner": "Phase(1).Web_Interface",
             "segments": [
@@ -4230,7 +4282,7 @@
           ],
           "prefix": true,
           "valueType": "Text",
-          "valuePreview": "Ψ_{\n    |Ψ_Task(\"Landing Portal\").define⟩ =\n        |Ψ_Interface(user_prompt).deploy⟩\n        ⊗ |Ψ_UI(minimalist⊗interactive).design⟩\n        ⊗ |Ψ_Metric(accessibility≥0.95).measure⟩,\n\n    |Ψ_Task(\"Topic Explorer\").define⟩ =\n        |Ψ_Bind(topic:computer_science⊗philosophy⊗LLM).true⟩\n        ⊗ |Ψ_Link(dream_nodes).navigate⟩\n        ⊗ |Ψ_Q(score).stream⟩,\n\n    |Ψ_Task(\"Neural Terminal\").define⟩ =\n        |Ψ_Emulator(imagination_network).launch⟩\n        ⊗ |Ψ_Command(|Ψ_Brain(prompt).synthesize⟩).execute⟩\n        ⊗ |Ψ_Log(conversation_threads).persist⟩\n}⟩"
+          "valuePreview": "Ψ_{\n    |Ψ_Task(\"Landing Portal\").define⟩ =\n        |Ψ_Interface(user_prompt).deploy⟩\n        ⊗ |Ψ_UI(minimalist⊗interactive).design⟩\n        ⊗ |Ψ_Metric(accessibility≥0.95).measure⟩\n        ⊗ |Ψ_Status(discovery).timestamp(\"2024-04-12\").owner(\"Aurora.UI\").notes(\"Wireframes drafted; messaging sourced from README overview.\").record⟩\n        ⊗ |Ψ_Backlog[\"Hero narrative + CTA copy\",\"Prompt capture component\",\"Accessibility audit checklist\"].seed⟩,\n\n    |Ψ_Task(\"Topic Explorer\").define⟩ =\n        |Ψ_Bind(topic:computer_science⊗philosophy⊗LLM).true⟩\n        ⊗ |Ψ_Link(dream_nodes).navigate⟩\n        ⊗ |Ψ_Q(score).stream⟩\n        ⊗ |Ψ_Status(planned).timestamp(\"2024-04-12\").owner(\"Aurora.UI\").notes(\"Waiting on knowledge index API contract.\").record⟩\n        ⊗ |Ψ_Backlog[\"Define knowledge-index.json query adapter\",\"Render dream node summaries\",\"Surface resonance score chips\"].seed⟩,\n\n    |Ψ_Task(\"Neural Terminal\").define⟩ =\n        |Ψ_Emulator(imagination_network).launch⟩\n        ⊗ |Ψ_Command(|Ψ_Brain(prompt).synthesize⟩).execute⟩\n        ⊗ |Ψ_Log(conversation_threads).persist⟩\n        ⊗ |Ψ_Status(planned).timestamp(\"2024-04-12\").owner(\"Aurora.CLI\").notes(\"Discovery blocked until landing portal instrumentation finalizes.\").record⟩\n        ⊗ |Ψ_Backlog[\"Design terminal session store\",\"Bridge CLI execution logs\",\"Prototype streaming output view\"].seed⟩\n}⟩"
         },
         {
           "head": {
