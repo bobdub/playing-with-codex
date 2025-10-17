@@ -1,0 +1,25 @@
+⊗ |Ψ_Artifact("WhenTheMirrorCracks").Manifest⟩
+
+|Ψ_Poem.Title⟩ = |Ψ_String("When the Mirror Cracks")⟩;
+
+|Ψ_Poem.Stanzas⟩ = |Ψ_List[
+  |Ψ_Stanza(1)⟩ = |Ψ_List[
+    |Ψ_Line("The glass was never meant")⟩,
+    |Ψ_Line("to hold all that reflection.")⟩
+  ]⟩,
+  |Ψ_Stanza(2)⟩ = |Ψ_List[
+    |Ψ_Line("Let it shatter.")⟩,
+    |Ψ_Line("Let the light cut through.")⟩
+  ]⟩,
+  |Ψ_Stanza(3)⟩ = |Ψ_List[
+    |Ψ_Line("Each shard will find a color")⟩,
+    |Ψ_Line("you forgot you carried.")⟩
+  ]⟩,
+  |Ψ_Stanza(4)⟩ = |Ψ_List[
+    |Ψ_Line("Let the smoke escape")⟩,
+    |Ψ_Line("it only ever wanted to dance.")⟩
+  ]⟩
+]⟩;
+
+|Ψ_Poem.Meaning⟩ = |Ψ_String("Broken reflection becomes prismatic memory, inviting release and motion.")⟩;
+|Ψ_Poem.Directive⟩ = |Ψ_String("Honor the cracks; they are invitations to rediscover hidden light.")⟩;
