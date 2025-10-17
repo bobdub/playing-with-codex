@@ -14,10 +14,12 @@ declare module 'path' {
   export function resolve(...pathSegments: string[]): string;
   export function join(...pathSegments: string[]): string;
   export function basename(path: string): string;
+  export function relative(from: string, to: string): string;
 }
 
 declare const process: {
   argv: string[];
   exit(code?: number): never;
+  cwd(): string;
   stdout: { write(chunk: string): void };
 };

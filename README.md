@@ -23,8 +23,9 @@ npm run build
 node dist/index.js docs --format summary
 ```
 
-- The CLI accepts one or more files/directories and produces either JSON or a plain-text summary.
+- The CLI accepts one or more files/directories and produces either JSON, a knowledge index, or a plain-text summary.
 - Use `--symbol` to filter the compiled output by a specific |Ψ symbol (e.g. `--symbol Ψ_Network`).
+- Use `--format index --out docs/knowledge-index.json` (or `npm run build:index`) to regenerate the searchable index artifact.
 - Run `npm run check` to execute the build, produce a summary across `docs/`, and validate the regression guard for `Ψ_Network` statements.
 
 ## Current Plan Status
@@ -35,9 +36,9 @@ The canonical project plan lives in `docs/ProjectPlan.|Ψ`. The following table 
 | --- | --- | --- | --- |
 | **Phase 0 – Foundation** | Establish the conceptual and technical baseline. | **Launched** | Dream Core assembled and weekly "dream resonance" sync cadence initiated. Core |Ψ manuscripts are present; further validation and automation still needed. |
 | ├─ Assemble Dream Core | Define the Dream, Ethics, Entity, and Q agents. | ✅ Complete | Manuscripts in `docs/Dreams.|Ψ`, `docs/Ethics.|Ψ`, `docs/Entity.|Ψ`, and `docs/Q.|Ψ`. |
-| ├─ Knowledge Repository | Seed and index the knowledge base. | ⚠️ Partially Done | Manuscripts exist, but indexing/search automation has not been implemented. |
+| ├─ Knowledge Repository | Seed and index the knowledge base. | ✅ Complete | Manuscripts compiled into `docs/knowledge-index.json`; run `npm run build:index` to refresh. |
 | ├─ Toolchain Initialization | Validate LLM/DSL pipeline and CI. | ✅ Complete | `src/` TypeScript compiler, CLI, and regression script exist; `npm run check` builds and validates output. |
-| └─ Ethical Charter | Align embers (ethics) and archive sign-off. | ⚠️ Partially Done | Ethics manuscript drafted; need enforcement/policy hooks beyond prose. |
+| └─ Ethical Charter | Align embers (ethics) and archive sign-off. | ✅ Complete | Automated charter validation (`scripts/check-ethics.js`) guards required decision outcomes. |
 | **Phase 1 – Web Interface** | Build landing portal, topic explorer, neural terminal. | ⏳ Not Started | No web UI code beyond CLI. Requires scoping into concrete features. |
 | **Phase 2 – Dream OS** | Kernel, memory garden, scheduler, security lattice. | ⏳ Not Started | Manuscripts describe components, but no executable implementation. |
 | **Phase 3 – Resonance Testing** | Integration trials, monitoring, ethical review. | ⏳ Not Started | Requires implementation of Phases 1–2 first. |
@@ -45,9 +46,9 @@ The canonical project plan lives in `docs/ProjectPlan.|Ψ`. The following table 
 
 ### Key Needs Identified
 
-1. **Searchable Knowledge Index** – Transform the manuscripts into a navigable index (e.g. generate JSON indices, surface metadata, or integrate into a simple frontend).
+1. **Knowledge Index Integration** – Wire `docs/knowledge-index.json` into discovery tools (search endpoints or UI explorers) so the curated data becomes usable outside the CLI.
 2. **Execution Plan for Phase 1 Web Interface** – Decide on stack, scope initial MVP (landing portal + topic explorer), and align CLI outputs with UI needs.
-3. **Operationalizing Ethics** – Turn the ethics manifesto into actionable checks (lint rules, contribution guidelines, or runtime policies).
+3. **Extend Ethics Automation** – Build on `scripts/check-ethics.js` to add runtime policy hooks or contribution guardrails that surface misalignment early.
 4. **Automation and Packaging** – Document reproducible pipelines for the OS blueprint (`composer-cli`) and ensure artifacts can be built from source.
 
 ## Next Steps

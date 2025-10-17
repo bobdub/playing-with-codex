@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { readFileSync, statSync, readdirSync, writeFileSync } from 'fs';
-import { resolve, join, basename } from 'path';
+import { resolve, join, basename, relative } from 'path';
 import { compilePsiSource } from './compiler';
 import { CompilationResult, CompiledStatement, CompiledValue, ExpressionInfo } from './ast';
 
-type OutputFormat = 'json' | 'summary';
+type OutputFormat = 'json' | 'summary' | 'index';
 
 interface CliOptions {
   format: OutputFormat;
@@ -76,7 +76,7 @@ function parseArguments(argv: string[]): { options: CliOptions; inputs: string[]
         if (!value) {
           throw new Error('Missing value for --format');
         }
-        if (value !== 'json' && value !== 'summary') {
+        if (value !== 'json' && value !== 'summary' && value !== 'index') {
           throw new Error(`Unsupported format: ${value}`);
         }
         options.format = value;
@@ -161,6 +161,10 @@ function isPsiDocument(path: string): boolean {
 function renderOutput(results: FileCompilation[], options: CliOptions): string {
   if (options.format === 'summary') {
     return renderSummary(results);
+  }
+
+  if (options.format === 'index') {
+    return renderKnowledgeIndex(results, options.pretty);
   }
 
   const payload = results.length === 1
@@ -280,11 +284,172 @@ function isBlockValue(value: CompiledValue): value is { type: 'Block'; statement
   return typeof (value as { type?: string }).type === 'string' && (value as { type: string }).type === 'Block';
 }
 
+function isListValue(value: CompiledValue): value is { type: 'List'; items: ExpressionInfo[] } {
+  return typeof (value as { type?: string }).type === 'string' && (value as { type: string }).type === 'List';
+}
+
+interface KnowledgeIndexEntry {
+  head: {
+    raw: string;
+    inner: string;
+    segments: string[];
+  };
+  file: string;
+  path: string[];
+  prefix: boolean;
+  valueType?: string;
+  valuePreview?: string;
+}
+
+interface KnowledgeIndexSymbol {
+  identifier: string;
+  occurrences: number;
+  entries: KnowledgeIndexEntry[];
+}
+
+interface KnowledgeIndex {
+  files: {
+    file: string;
+    statements: number;
+    psiSymbols: number;
+  }[];
+  symbols: KnowledgeIndexSymbol[];
+}
+
+function renderKnowledgeIndex(results: FileCompilation[], pretty: boolean): string {
+  const index = buildKnowledgeIndex(results);
+  return JSON.stringify(index, null, pretty ? 2 : undefined) + '\n';
+}
+
+function buildKnowledgeIndex(results: FileCompilation[]): KnowledgeIndex {
+  const symbols = new Map<string, KnowledgeIndexSymbol>();
+  const files: KnowledgeIndex['files'] = [];
+
+  for (const { file, compiled } of results) {
+    const relativeFile = relative(process.cwd(), file);
+    const psiStatements = collectPsiStatements(compiled, relativeFile);
+    files.push({ file: relativeFile, statements: compiled.length, psiSymbols: psiStatements.length });
+
+    for (const entry of psiStatements) {
+      const head = entry.statement.head;
+      if (head.kind !== 'PsiSymbol') {
+        continue;
+      }
+      const identifier = decorateIdentifier(head.identifier);
+      let symbol = symbols.get(identifier);
+      if (!symbol) {
+        symbol = { identifier, occurrences: 0, entries: [] };
+        symbols.set(identifier, symbol);
+      }
+      symbol.occurrences += 1;
+      symbol.entries.push({
+        head: {
+          raw: head.raw,
+          inner: head.inner,
+          segments: head.segments.slice(),
+        },
+        file: entry.file,
+        path: entry.path,
+        prefix: entry.statement.prefix,
+        valueType: describeValueType(entry.statement.value),
+        valuePreview: createValuePreview(entry.statement.value),
+      });
+    }
+  }
+
+  const sortedSymbols = Array.from(symbols.values())
+    .map((symbol) => ({
+      identifier: symbol.identifier,
+      occurrences: symbol.occurrences,
+      entries: symbol.entries
+        .sort((a, b) => {
+          if (a.file === b.file) {
+            return a.path.join('>').localeCompare(b.path.join('>'));
+          }
+          return a.file.localeCompare(b.file);
+        }),
+    }))
+    .sort((a, b) => a.identifier.localeCompare(b.identifier));
+
+  return {
+    files: files.sort((a, b) => a.file.localeCompare(b.file)),
+    symbols: sortedSymbols,
+  };
+}
+
+function decorateIdentifier(identifier: string): string {
+  return identifier.startsWith('Ψ_') ? identifier : `Ψ_${identifier}`;
+}
+
+interface PsiStatementEntry {
+  file: string;
+  path: string[];
+  statement: CompiledStatement;
+}
+
+function collectPsiStatements(statements: CompiledStatement[], file: string, ancestors: string[] = []): PsiStatementEntry[] {
+  const collected: PsiStatementEntry[] = [];
+  for (const statement of statements) {
+    const label = formatExpressionSummary(statement.head);
+    const path = [...ancestors, label];
+    if (statement.head.kind === 'PsiSymbol') {
+      collected.push({ file, path, statement });
+    }
+    if (statement.value && isBlockValue(statement.value)) {
+      collected.push(...collectPsiStatements(statement.value.statements, file, path));
+    }
+  }
+  return collected;
+}
+
+function describeValueType(value: CompiledValue | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+  if (isBlockValue(value)) {
+    return 'Block';
+  }
+  if (isListValue(value)) {
+    return 'List';
+  }
+  if ((value as ExpressionInfo).kind === 'PsiSymbol') {
+    return 'PsiSymbol';
+  }
+  if ((value as ExpressionInfo).kind === 'Text') {
+    return 'Text';
+  }
+  return undefined;
+}
+
+function createValuePreview(value: CompiledValue | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+  if (isBlockValue(value)) {
+    const previews = value.statements.slice(0, 3).map((statement) => formatExpressionSummary(statement.head));
+    const suffix = value.statements.length > 3 ? ' …' : '';
+    return `Block(${value.statements.length}): ${previews.join(' | ')}${suffix}`;
+  }
+  if (isListValue(value)) {
+    const items = value.items.slice(0, 5).map((item) => formatExpressionSummary(item));
+    const suffix = value.items.length > 5 ? ' …' : '';
+    return `List(${value.items.length}): ${items.join(', ')}${suffix}`;
+  }
+  return formatExpressionSummary(value as ExpressionInfo);
+}
+
+function formatExpressionSummary(expression: ExpressionInfo): string {
+  if (expression.kind === 'PsiSymbol') {
+    return expression.raw;
+  }
+  return expression.text;
+}
+
 function printUsage(): void {
   const usage = `psi-compiler <input...> [options]
 
 Options:
-  --format <json|summary>  Output format (default: json)
+  --format <json|summary|index>  Output format (default: json)
   --pretty                Pretty-print JSON output
   --no-pretty             Disable pretty printing
   --out <file>            Write output to a file
