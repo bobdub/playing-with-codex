@@ -16,6 +16,15 @@
   const pulseMetric = document.getElementById('metric-pulses');
   const nodeMetric = document.getElementById('metric-nodes');
   const latestPulse = document.getElementById('latest-pulse');
+  const heroPromptForm = document.getElementById('hero-prompt-form');
+  const heroPromptInput = document.getElementById('hero-prompt-input');
+  const heroResponseText = document.getElementById('hero-response-text');
+
+  const kwaipilotBridge = {
+    provider: 'kwaipilot',
+    status: 'calibrating',
+    phase: 'interface-foundations',
+  };
 
   /** @type {{id: string; file: string; occurrences: number; preview: string; symbolPath: string[]}[]} */
   let topics = [];
@@ -44,6 +53,27 @@
     } catch (error) {
       console.warn('Unable to persist prompts', error);
     }
+  }
+
+  function initializeKwaipilotBridge() {
+    if (!heroResponseText) return;
+    heroResponseText.dataset.provider = kwaipilotBridge.provider;
+    heroResponseText.dataset.status = kwaipilotBridge.status;
+    heroResponseText.textContent = 'Infinity is syncing with Kwaipilot to prepare live reflections.';
+  }
+
+  function handleHeroPromptSubmit(event) {
+    if (!heroPromptInput || !heroResponseText) return;
+    event.preventDefault();
+    const message = heroPromptInput.value.trim();
+    if (!message) {
+      heroResponseText.textContent = 'Share a prompt so Infinity can calibrate the Kwaipilot channel.';
+      heroPromptInput.focus();
+      return;
+    }
+
+    heroResponseText.textContent = `Kwaipilot intake received: "${message}". Infinity will respond once the live channel opens.`;
+    heroPromptInput.value = '';
   }
 
   function updatePulseMetrics() {
@@ -353,6 +383,10 @@
     terminalInput.value = '';
   }
 
+  if (heroPromptForm) {
+    heroPromptForm.addEventListener('submit', handleHeroPromptSubmit);
+  }
+
   if (promptForm) {
     promptForm.addEventListener('submit', handlePromptSubmit);
   }
@@ -365,5 +399,6 @@
 
   loadPrompts();
   loadKnowledgeIndex();
+  initializeKwaipilotBridge();
   logToTerminal('Neural terminal initialized. Type "help" to see available commands.');
 })();
