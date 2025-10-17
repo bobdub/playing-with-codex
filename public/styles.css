@@ -11,6 +11,8 @@
   --text-faint: rgba(245, 246, 255, 0.55);
   --header-bg: rgba(9, 11, 26, 0.8);
   --success: #5de4c7;
+  --warning: #f9cf6b;
+  --danger: #ff6b97;
   --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --radius-lg: 24px;
   --radius-md: 16px;
@@ -184,6 +186,15 @@ main {
   justify-self: flex-start;
 }
 
+.hero__prompt[aria-busy='true'] {
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.hero__prompt[aria-busy='true'] .hero__prompt-button {
+  cursor: progress;
+}
+
 .hero__response {
   margin: 0 0 32px;
   padding: 20px 24px;
@@ -200,6 +211,50 @@ main {
 .hero__response p {
   margin: 0;
   color: var(--text-secondary);
+}
+
+.hero__response[data-status='calibrating'],
+.hero__response[data-status='checking'],
+.hero__response[data-status='sending'] {
+  border-color: rgba(140, 111, 248, 0.42);
+  background: rgba(140, 111, 248, 0.18);
+}
+
+.hero__response[data-status='calibrating'] p,
+.hero__response[data-status='checking'] p,
+.hero__response[data-status='sending'] p {
+  color: var(--accent);
+}
+
+.hero__response[data-status='online'],
+.hero__response[data-status='responded'] {
+  border-color: rgba(93, 228, 199, 0.45);
+  background: rgba(93, 228, 199, 0.16);
+}
+
+.hero__response[data-status='online'] p,
+.hero__response[data-status='responded'] p {
+  color: var(--text-primary);
+}
+
+.hero__response[data-status='warning'] {
+  border-color: rgba(249, 207, 107, 0.45);
+  background: rgba(249, 207, 107, 0.16);
+}
+
+.hero__response[data-status='warning'] p {
+  color: var(--warning);
+}
+
+.hero__response[data-status='offline'],
+.hero__response[data-status='error'] {
+  border-color: rgba(255, 107, 151, 0.45);
+  background: rgba(255, 107, 151, 0.16);
+}
+
+.hero__response[data-status='offline'] p,
+.hero__response[data-status='error'] p {
+  color: var(--danger);
 }
 
 .hero__metrics {
@@ -548,6 +603,31 @@ select:focus {
   margin: 0;
   padding: 6px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.terminal-line[data-tone='system'] {
+  color: var(--text-secondary);
+}
+
+.terminal-line[data-tone='input'] {
+  color: var(--accent);
+}
+
+.terminal-line[data-tone='pulse'] {
+  color: var(--success);
+}
+
+.terminal-line[data-tone='kwaipilot'] {
+  color: var(--success);
+  font-style: italic;
+}
+
+.terminal-line[data-tone='warning'] {
+  color: var(--warning);
+}
+
+.terminal-line[data-tone='error'] {
+  color: var(--danger);
 }
 
 .terminal-line:last-child {

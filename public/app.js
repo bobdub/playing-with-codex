@@ -18,13 +18,100 @@
   const latestPulse = document.getElementById('latest-pulse');
   const heroPromptForm = document.getElementById('hero-prompt-form');
   const heroPromptInput = document.getElementById('hero-prompt-input');
+  const heroPromptButton = heroPromptForm ? heroPromptForm.querySelector('button[type="submit"]') : null;
+  const heroResponseContainer = document.getElementById('hero-response');
   const heroResponseText = document.getElementById('hero-response-text');
+
+  const globalKwaipilotConfig = typeof window !== 'undefined' && window.KWAIPILOT_CONFIG ? window.KWAIPILOT_CONFIG : null;
+  const globalKwaipilotBase =
+    (globalKwaipilotConfig && typeof globalKwaipilotConfig.baseUrl === 'string' && globalKwaipilotConfig.baseUrl) ||
+    (typeof window !== 'undefined' && typeof window.KWAIPILOT_BASE_URL === 'string' ? window.KWAIPILOT_BASE_URL : undefined);
+
+  function parsePositiveInt(value) {
+    if (!value && value !== 0) return undefined;
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }
+
+  function parseTemperature(value) {
+    if (!value && value !== 0) return undefined;
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) && parsed >= 0 && parsed <= 2 ? parsed : undefined;
+  }
+
+  function joinUrl(base, path) {
+    if (!base) return path;
+    const normalisedBase = base.replace(/\/$/, '');
+    const normalisedPath = path.replace(/^\//, '');
+    return `${normalisedBase}/${normalisedPath}`;
+  }
+
+  function normaliseError(error) {
+    if (!error) return 'Unknown error';
+    if (typeof error === 'string') return error;
+    if (error instanceof Error && error.message) return error.message;
+    try {
+      return JSON.stringify(error);
+    } catch (serializationError) {
+      return String(error);
+    }
+  }
+
+  function truncateText(text, limit) {
+    if (typeof text !== 'string') return '';
+    const boundary = typeof limit === 'number' && limit > 0 ? limit : 360;
+    return text.length <= boundary ? text : `${text.slice(0, boundary)}…`;
+  }
+
+  const datasetBase = heroPromptForm && heroPromptForm.dataset.llmBase;
+  const fallbackBaseUrl = '/api/kwaipilot';
+  const kwaipilotBase = datasetBase || globalKwaipilotBase || fallbackBaseUrl;
+  const datasetChatEndpoint = heroPromptForm && heroPromptForm.dataset.llmEndpoint;
+  const datasetHealthEndpoint = heroPromptForm && heroPromptForm.dataset.llmHealthEndpoint;
+  const datasetMaxTokens = heroPromptForm && parsePositiveInt(heroPromptForm.dataset.llmMaxTokens);
+  const configMaxTokens = globalKwaipilotConfig && parsePositiveInt(globalKwaipilotConfig.maxNewTokens);
+  const datasetTemperature = heroPromptForm && parseTemperature(heroPromptForm.dataset.llmTemperature);
+  const configTemperature = globalKwaipilotConfig && parseTemperature(globalKwaipilotConfig.temperature);
 
   const kwaipilotBridge = {
     provider: 'kwaipilot',
     status: 'calibrating',
     phase: 'interface-foundations',
+    endpoints: {
+      chat: datasetChatEndpoint || joinUrl(kwaipilotBase, '/chat'),
+      health: datasetHealthEndpoint || joinUrl(kwaipilotBase, '/health'),
+    },
+    defaults: {
+      maxNewTokens: datasetMaxTokens ?? configMaxTokens ?? 512,
+      temperature: datasetTemperature ?? configTemperature ?? 0.6,
+    },
   };
+
+  function updateHeroStatus(status, message) {
+    kwaipilotBridge.status = status;
+    if (heroResponseContainer) {
+      heroResponseContainer.dataset.status = status;
+      heroResponseContainer.dataset.provider = kwaipilotBridge.provider;
+    }
+    if (heroResponseText) {
+      heroResponseText.dataset.status = status;
+      heroResponseText.dataset.provider = kwaipilotBridge.provider;
+      heroResponseText.textContent = message;
+    }
+  }
+
+  function setHeroPromptBusy(isBusy) {
+    if (heroPromptForm) {
+      heroPromptForm.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+    }
+    if (heroPromptInput) {
+      heroPromptInput.disabled = Boolean(isBusy);
+    }
+    if (heroPromptButton) {
+      heroPromptButton.disabled = Boolean(isBusy);
+      heroPromptButton.setAttribute('aria-disabled', isBusy ? 'true' : 'false');
+    }
+  }
 
   /** @type {{id: string; file: string; occurrences: number; preview: string; symbolPath: string[]}[]} */
   let topics = [];
@@ -55,25 +142,143 @@
     }
   }
 
-  function initializeKwaipilotBridge() {
-    if (!heroResponseText) return;
-    heroResponseText.dataset.provider = kwaipilotBridge.provider;
-    heroResponseText.dataset.status = kwaipilotBridge.status;
-    heroResponseText.textContent = 'Infinity is syncing with Kwaipilot to prepare live reflections.';
+  async function requestKwaipilotResponse(prompt) {
+    const payload = { prompt };
+    if (typeof kwaipilotBridge.defaults.maxNewTokens === 'number') {
+      payload.max_new_tokens = kwaipilotBridge.defaults.maxNewTokens;
+    }
+    if (typeof kwaipilotBridge.defaults.temperature === 'number') {
+      payload.temperature = kwaipilotBridge.defaults.temperature;
+    }
+
+    const response = await fetch(kwaipilotBridge.endpoints.chat, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`;
+      try {
+        const errorPayload = await response.json();
+        if (errorPayload && typeof errorPayload.detail === 'string') {
+          detail = errorPayload.detail;
+        }
+      } catch (parseError) {
+        // Ignore JSON parse issues and surface the HTTP code instead
+      }
+      throw new Error(detail);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+    const text = await response.text();
+    return { response: text, tokens_generated: null };
   }
 
-  function handleHeroPromptSubmit(event) {
+  async function checkKwaipilotHealth() {
+    if (!kwaipilotBridge.endpoints.health) {
+      updateHeroStatus(
+        'offline',
+        'Kwaipilot endpoint is not configured. Configure the gateway to enable live responses.',
+      );
+      return;
+    }
+
+    updateHeroStatus('checking', 'Checking Kwaipilot status…');
+    try {
+      const response = await fetch(kwaipilotBridge.endpoints.health, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      let payload = {};
+      try {
+        payload = await response.json();
+      } catch (parseError) {
+        payload = {};
+      }
+      const modelName = payload && typeof payload.model === 'string' ? payload.model : 'Kwaipilot';
+      updateHeroStatus('online', `${modelName} channel ready. Share an intention to receive a reflection.`);
+      logToTerminal(`Kwaipilot online (${modelName}).`, 'system');
+    } catch (error) {
+      const reason = normaliseError(error);
+      updateHeroStatus(
+        'offline',
+        'Kwaipilot channel is offline. Prompts are stored locally until the agent returns.',
+      );
+      logToTerminal(`Kwaipilot health check failed: ${reason}`, 'warning');
+    }
+  }
+
+  function initializeKwaipilotBridge() {
+    if (!heroResponseText) return;
+    updateHeroStatus('calibrating', 'Calibrating the Kwaipilot channel…');
+    if (!kwaipilotBridge.endpoints.chat) {
+      updateHeroStatus(
+        'offline',
+        'Kwaipilot endpoint is not configured. Configure the gateway to enable live responses.',
+      );
+      return;
+    }
+    checkKwaipilotHealth();
+  }
+
+  async function handleHeroPromptSubmit(event) {
     if (!heroPromptInput || !heroResponseText) return;
     event.preventDefault();
     const message = heroPromptInput.value.trim();
     if (!message) {
-      heroResponseText.textContent = 'Share a prompt so Infinity can calibrate the Kwaipilot channel.';
+      updateHeroStatus('warning', 'Share a prompt so Infinity can calibrate the Kwaipilot channel.');
       heroPromptInput.focus();
       return;
     }
 
-    heroResponseText.textContent = `Kwaipilot intake received: "${message}". Infinity will respond once the live channel opens.`;
-    heroPromptInput.value = '';
+    if (!kwaipilotBridge.endpoints.chat) {
+      updateHeroStatus(
+        'offline',
+        'Kwaipilot endpoint is not configured. Configure the gateway to enable live responses.',
+      );
+      return;
+    }
+
+    setHeroPromptBusy(true);
+    updateHeroStatus('sending', 'Transmitting intention to Kwaipilot…');
+
+    let shouldRefocus = false;
+
+    try {
+      const payload = await requestKwaipilotResponse(message);
+      const completion = payload && typeof payload.response === 'string' ? payload.response.trim() : '';
+      if (completion) {
+        updateHeroStatus('responded', `Kwaipilot › ${truncateText(completion, 480)}`);
+        logToTerminal(`Kwaipilot › ${completion}`, 'kwaipilot');
+      } else {
+        updateHeroStatus('responded', 'Kwaipilot responded with an empty message.');
+        logToTerminal('Kwaipilot returned an empty response.', 'warning');
+      }
+      if (payload && typeof payload.tokens_generated === 'number') {
+        logToTerminal(`Tokens generated: ${payload.tokens_generated}`, 'system');
+      }
+      heroPromptInput.value = '';
+      shouldRefocus = true;
+    } catch (error) {
+      const reason = normaliseError(error);
+      updateHeroStatus('error', `Kwaipilot request failed: ${reason}`);
+      logToTerminal(`Kwaipilot request failed: ${reason}`, 'error');
+      shouldRefocus = true;
+    } finally {
+      setHeroPromptBusy(false);
+      if (shouldRefocus && heroPromptInput) {
+        heroPromptInput.focus();
+      }
+    }
   }
 
   function updatePulseMetrics() {
