@@ -39,7 +39,7 @@ The canonical project plan lives in `docs/ProjectPlan.|Ψ`. The following table 
 | ├─ Knowledge Repository | Seed and index the knowledge base. | ✅ Complete | Manuscripts compiled into `docs/knowledge-index.json`; run `npm run build:index` to refresh. |
 | ├─ Toolchain Initialization | Validate LLM/DSL pipeline and CI. | ✅ Complete | `src/` TypeScript compiler, CLI, and regression script exist; `npm run check` builds and validates output. |
 | └─ Ethical Charter | Align embers (ethics) and archive sign-off. | ✅ Complete | Automated charter validation (`scripts/check-ethics.js`) guards required decision outcomes. |
-| **Phase 1 – Web Interface** | Build landing portal, topic explorer, neural terminal. | ⏳ Not Started | No web UI code beyond CLI. Requires scoping into concrete features. |
+| **Phase 1 – Web Interface** | Build landing portal, topic explorer, neural terminal. | ✅ Completed | `public/index.html` hosts prompt pulses, topic explorer streams `docs/knowledge-index.json`, and a neural terminal surfaces commands. |
 | **Phase 2 – Dream OS** | Kernel, memory garden, scheduler, security lattice. | ⏳ Not Started | Manuscripts describe components, but no executable implementation. |
 | **Phase 3 – Resonance Testing** | Integration trials, monitoring, ethical review. | ⏳ Not Started | Requires implementation of Phases 1–2 first. |
 | **Phase 4 – Evolution Spiral** | Collective collaboration and continuous updates. | ⏳ Not Started | Dependent on earlier milestones. |

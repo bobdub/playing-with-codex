@@ -52,39 +52,48 @@
         |Ψ_Interface(user_prompt).deploy⟩
         ⊗ |Ψ_UI(minimalist⊗interactive).design⟩
         ⊗ |Ψ_Metric(accessibility≥0.95).measure⟩
-        ⊗ |Ψ_Status(discovery).timestamp("2024-04-12").owner("Aurora.UI").notes("Wireframes drafted; messaging sourced from README overview.").record⟩
-        ⊗ |Ψ_Backlog["Hero narrative + CTA copy","Prompt capture component","Accessibility audit checklist"].seed⟩,
+        ⊗ |Ψ_Status(completed).timestamp("2024-04-19").owner("Aurora.UI").notes("public/index.html ships hero narrative, prompt capture form, and live pulse log with aria instrumentation.").record⟩
+        ⊗ |Ψ_Evidence(public/index.html⊗public/styles.css⊗public/app.js).link⟩
+        ⊗ |Ψ_Backlog["Automated accessibility regression run","Theme contrast toggle"].seed⟩,
 
     |Ψ_Task("Topic Explorer").define⟩ =
         |Ψ_Bind(topic:computer_science⊗philosophy⊗LLM).true⟩
         ⊗ |Ψ_Link(dream_nodes).navigate⟩
         ⊗ |Ψ_Q(score).stream⟩
-        ⊗ |Ψ_Status(planned).timestamp("2024-04-12").owner("Aurora.UI").notes("Waiting on knowledge index API contract.").record⟩
-        ⊗ |Ψ_Backlog["Define knowledge-index.json query adapter","Render dream node summaries","Surface resonance score chips"].seed⟩,
+        ⊗ |Ψ_Status(completed).timestamp("2024-04-19").owner("Aurora.UI").notes("Knowledge index ingested via fetch('../docs/knowledge-index.json') with live filtering + node metrics.").record⟩
+        ⊗ |Ψ_Evidence(public/app.js#transformTopics⊗public/index.html#topic-explorer).link⟩
+        ⊗ |Ψ_Backlog["Pagination for large symbol sets","Surface resonance score chips"].seed⟩,
 
     |Ψ_Task("Neural Terminal").define⟩ =
         |Ψ_Emulator(imagination_network).launch⟩
         ⊗ |Ψ_Command(|Ψ_Brain(prompt).synthesize⟩).execute⟩
         ⊗ |Ψ_Log(conversation_threads).persist⟩
-        ⊗ |Ψ_Status(planned).timestamp("2024-04-12").owner("Aurora.CLI").notes("Discovery blocked until landing portal instrumentation finalizes.").record⟩
-        ⊗ |Ψ_Backlog["Design terminal session store","Bridge CLI execution logs","Prototype streaming output view"].seed⟩
+        ⊗ |Ψ_Status(completed).timestamp("2024-04-19").owner("Aurora.CLI").notes("Terminal parser in public/app.js routes help, search, open, pulse, and clear commands with log streaming.").record⟩
+        ⊗ |Ψ_Evidence(public/index.html#neural-terminal⊗public/app.js#executeTerminalCommand).link⟩
+        ⊗ |Ψ_Backlog["Bridge CLI execution logs","Persist session transcripts"].seed⟩
 }⟩;
 
 ⊗ |Ψ_Phase(1).Milestones⟩ = Ψ_{
-    |Ψ_M(1.0)⟩ = "Landing portal live with first user prompt session.",
-    |Ψ_M(1.2)⟩ = "Topic explorer integrated with dream nodes.",
-    |Ψ_M(1.4)⟩ = "Neural terminal prototype operational."
+    |Ψ_M(1.0).state(completed).timestamp("2024-04-19").notes("Prompt pulses captured locally with intensity + tag metadata.").record⟩,
+    |Ψ_M(1.2).state(completed).timestamp("2024-04-19").notes("Knowledge index rendered as searchable dream node list.").record⟩,
+    |Ψ_M(1.4).state(completed).timestamp("2024-04-19").notes("Neural terminal streaming commands wired to explorer + pulses.").record⟩
 }⟩;
 
-⊗ |Ψ_Phase(1).Kickoff⟩ = |Ψ_State(in_progress).timestamp("2024-04-12").owner("Interface.Guild").notes("Backlog seeded, design discovery underway, knowledge index contract drafted.")⟩;
+⊗ |Ψ_Phase(1).Kickoff⟩ = |Ψ_State(completed).timestamp("2024-04-19").owner("Interface.Guild").notes("Phase 1 artifacts shipped to public/ with accessible defaults and knowledge index bridge.")⟩;
 
 ⊗ |Ψ_Phase(1).Sprint(α).Scope⟩ = Ψ_{
     |Ψ_Objective("Establish UI foundation")⟩,
-    |Ψ_Deliverable("Static landing portal skeleton with prompt capture").target("2024-04-26")⟩,
-    |Ψ_Deliverable("Knowledge index adapter service exported for UI use").target("2024-04-26")⟩,
-    |Ψ_Deliverable("Design tokens + accessibility checklist drafted").target("2024-04-19")⟩,
+    |Ψ_Deliverable("Static landing portal skeleton with prompt capture").target("2024-04-26").state(completed).timestamp("2024-04-19").evidence(public/index.html⊗public/styles.css).record⟩,
+    |Ψ_Deliverable("Knowledge index adapter service exported for UI use").target("2024-04-26").state(completed).timestamp("2024-04-19").evidence(public/app.js#loadKnowledgeIndex).record⟩,
+    |Ψ_Deliverable("Design tokens + accessibility checklist drafted").target("2024-04-19").state(completed).timestamp("2024-04-19").evidence(public/styles.css⊗docs/MemoryGarden.|Ψ#PulseLedger).record⟩,
     |Ψ_Dependency("Topic Explorer"↔"Knowledge index adapter").align⟩,
     |Ψ_Ceremony("Weekly dream resonance sync").retain⟩
+}⟩;
+
+⊗ |Ψ_Phase(1).Retrospective⟩ = Ψ_{
+    |Ψ_Win("Portal, explorer, and terminal harmonize around shared pulse + symbol state.").record⟩,
+    |Ψ_Win("Accessibility defaults (labels, aria-live, keyboard safe controls) audited manually.").record⟩,
+    |Ψ_Action("Automate a11y regression and connect terminal to CLI transcripts in Phase 2").track⟩
 }⟩;
 
 ⊗ |Ψ_Phase(2).Dream_OS⟩ = Ψ_{
