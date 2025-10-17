@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Imagination Network Portal</title>
+    <link rel="stylesheet" href="./public/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#landing-portal">Skip to main content</a>
+    <header class="site-header" role="banner">
+      <div class="site-header__inner">
+        <span class="site-logo" aria-label="Imagination Network home">∞ Imagination Network</span>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="#landing-portal">Pulse</a>
+          <a href="#topic-explorer">Explore</a>
+          <a href="#phase-preview">Roadmap</a>
+          <a href="../docs/ProjectPlan.md" target="_blank" rel="noopener">Project plan</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero" id="home" aria-labelledby="hero-heading">
+      <div class="hero__content">
+        <p class="hero__tagline">Phase 1 · Interface Foundations</p>
+        <h1 id="hero-heading">Imagination Network Portal</h1>
+        <p class="hero__description">
+          Step into the MemoryGarden, plant resonant prompts, and trace how the knowledge index braids each symbol into Infinity’s evolving story.
+        </p>
+        <div class="hero__metrics" aria-live="polite">
+          <div class="metric-card">
+            <span class="metric-card__label">Pulses logged</span>
+            <span id="metric-pulses" class="metric-card__value">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Dream nodes mapped</span>
+            <span id="metric-nodes" class="metric-card__value">0</span>
+          </div>
+        </div>
+        <p id="latest-pulse" class="hero__latest" aria-live="polite">
+          No pulses recorded yet. Your first intention will illuminate the terminal log.
+        </p>
+        <div class="hero__cta-group">
+          <a class="hero__cta" href="#landing-portal">Begin a new pulse</a>
+          <a class="hero__cta hero__cta--secondary" href="#phase-preview">Preview the roadmap</a>
+        </div>
+      </div>
+    </section>
+
+    <main id="main-content">
+      <section id="experience-highlights" class="panel panel--transparent" aria-labelledby="experience-heading">
+        <div class="panel__header">
+          <h2 id="experience-heading">What you can do here</h2>
+          <p class="panel__subtitle">This portal focuses on Phase 1: surfacing imagination signals through an accessible, information-rich interface.</p>
+        </div>
+        <ul class="feature-grid" role="list">
+          <li class="feature-card">
+            <h3>Plant intentional pulses</h3>
+            <p>Capture dreams, hypotheses, and story seeds with contextual tags and intensities. Everything stays local until the API gateway arrives in Phase 2.</p>
+          </li>
+          <li class="feature-card">
+            <h3>Explore the knowledge index</h3>
+            <p>Search the compiled Ψ manuscripts, jump straight to source files, and watch metrics update as new documentation is generated.</p>
+          </li>
+          <li class="feature-card">
+            <h3>Prototype the neural terminal</h3>
+            <p>Experiment with the imagination syntax through a simulated terminal that echoes the forthcoming Infinity OS environment.</p>
+          </li>
+        </ul>
+      </section>
+
+      <section id="landing-portal" class="panel" aria-labelledby="landing-heading">
+        <div class="panel__header">
+          <h2 id="landing-heading">Landing Portal</h2>
+          <p class="panel__subtitle">Capture a prompt, tag its intention, and watch the resonance pulses collect.</p>
+        </div>
+        <form id="prompt-form" class="prompt-form" novalidate>
+          <div class="form-field">
+            <label for="prompt-input">Prompt</label>
+            <textarea id="prompt-input" name="prompt" rows="4" required aria-describedby="prompt-help"></textarea>
+            <p id="prompt-help" class="form-help">Describe the dream, question, or intention you want the network to hold.</p>
+          </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="prompt-tag">Pulse tag</label>
+              <input id="prompt-tag" name="tag" type="text" placeholder="e.g. dream-mapping" />
+            </div>
+            <div class="form-field">
+              <label for="prompt-intensity">Pulse intensity</label>
+              <select id="prompt-intensity" name="intensity">
+                <option value="gentle">Gentle</option>
+                <option value="steady">Steady</option>
+                <option value="radiant">Radiant</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="button">Transmit pulse</button>
+        </form>
+        <div class="prompt-log" aria-live="polite" aria-atomic="false">
+          <h3>Pulses in orbit</h3>
+          <p id="prompt-total" class="prompt-total" role="status">No pulses stored yet.</p>
+          <ul id="prompt-list" class="prompt-list"></ul>
+        </div>
+      </section>
+
+      <section id="topic-explorer" class="panel" aria-labelledby="explorer-heading">
+        <div class="panel__header">
+          <h2 id="explorer-heading">Topic Explorer</h2>
+          <p class="panel__subtitle">Browse dream nodes compiled from the knowledge index and surface resonant threads.</p>
+          <p id="knowledge-highlight" class="panel__lede" aria-live="polite">Loading knowledge index…</p>
+        </div>
+        <div class="explorer-controls">
+          <div class="form-field">
+            <label for="search-input">Search dream nodes</label>
+            <input id="search-input" type="search" placeholder="Search by symbol, file, or phrase" aria-describedby="search-help" />
+            <p id="search-help" class="form-help">Results refresh as you type. Each entry links back to its manuscript.</p>
+          </div>
+          <div class="metric" role="status" aria-live="polite">
+            <span class="metric__label">Visible nodes</span>
+            <span id="node-count" class="metric__value">0</span>
+          </div>
+        </div>
+        <ul id="topic-list" class="topic-list" aria-label="Dream node results"></ul>
+      </section>
+
+      <section id="neural-terminal" class="panel" aria-labelledby="terminal-heading">
+        <div class="panel__header">
+          <h2 id="terminal-heading">Neural Terminal</h2>
+          <p class="panel__subtitle">Stream interface pulses. Try <code>help</code>, <code>search dream</code>, or <code>open Ψ_Network</code>.</p>
+        </div>
+        <div class="terminal" role="application" aria-live="polite">
+          <div id="terminal-log" class="terminal__log" aria-label="Terminal output"></div>
+          <form id="terminal-form" class="terminal__form" aria-label="Terminal input">
+            <label class="visually-hidden" for="terminal-input">Neural command</label>
+            <input id="terminal-input" type="text" autocomplete="off" placeholder="Enter command" />
+            <button type="submit" class="button button--secondary">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="phase-preview" class="panel" aria-labelledby="phase-heading">
+        <div class="panel__header">
+          <h2 id="phase-heading">Phase roadmap preview</h2>
+          <p class="panel__subtitle">We grounded the plan in iterative releases that honour the Infinity vision while meeting contributors where the codebase stands today.</p>
+        </div>
+        <ol class="phase-list">
+          <li>
+            <h3>Phase 1 · Interface Foundations &amp; Knowledge Surface</h3>
+            <p>Polish the portal, expose prompt and node metrics, and frame the knowledge index as a living atlas.</p>
+          </li>
+          <li>
+            <h3>Phase 2 · API Gateway &amp; Dream Node Service</h3>
+            <p>Ship a backend for storing pulses and serving explorer data with authentication, rate limiting, and tests.</p>
+          </li>
+          <li>
+            <h3>Phase 3 · Agent Orchestration &amp; Ethics Layer</h3>
+            <p>Introduce modular agents, LLM synthesis, and moderation safeguards before we reach for Infinity OS simulations.</p>
+          </li>
+        </ol>
+        <p class="panel__footer-note">Read the full <a href="../docs/ProjectPlan.md" target="_blank" rel="noopener">project plan update</a> for detailed success criteria and cross-cutting workstreams.</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Interface Guild · Phase 1 in motion · Crafted with accessibility-first components and ethical resonance.</p>
+    </footer>
+
+    <script src="./public/app.js" defer></script>
+  </body>
+</html>
