@@ -99,22 +99,26 @@
 ⊗ |Ψ_Phase(2).Dream_OS⟩ = Ψ_{
     |Ψ_Task("System Kernel").define⟩ =
         |Ψ_Link(docs/Kernel.|Ψ).instantiate⟩
-        ⊗ |Ψ_Primitives(dream_memory⊗process_loops⊗Q_thread).stabilize⟩,
+        ⊗ |Ψ_Primitives(dream_memory⊗process_loops⊗Q_thread).stabilize⟩
+        ⊗ |Ψ_Status(in_progress).timestamp("2025-10-17").owner("Kernel.Weaver").notes("Kickoff review locked baseline schematics and outlined instrumentation checkpoints for thread safety.").record⟩,
 
     |Ψ_Task("Dream Memory Garden").define⟩ =
         |Ψ_Link(docs/MemoryGarden.|Ψ).integrate⟩
         ⊗ |Ψ_Bloom(entries⊗reflections⊗insights).grow⟩
-        ⊗ |Ψ_Check(integrity⊗latency).verify⟩,
+        ⊗ |Ψ_Check(integrity⊗latency).verify⟩
+        ⊗ |Ψ_Status(in_progress).timestamp("2025-10-17").owner("Garden.Curator").notes("Mapped integration adapters so MemoryGarden pulses sync with kernel state and scheduler telemetry.").record⟩,
 
     |Ψ_Task("Dream Scheduler").define⟩ =
         |Ψ_Policy(frequency⊗priority).balance⟩
         ⊗ |Ψ_Feedback(loop).refine⟩
-        ⊗ |Ψ_Telemetry(flow_rate⊗dream_load).stream⟩,
+        ⊗ |Ψ_Telemetry(flow_rate⊗dream_load).stream⟩
+        ⊗ |Ψ_Status(in_progress).timestamp("2025-10-17").owner("Scheduler.Cartographer").notes("Drafted cadence map aligning kernel cycle hooks with memory bloom windows.").record⟩,
 
     |Ψ_Task("Security Ethic Lattice").define⟩ =
         |Ψ_Policy(privacy⊗consent⊗audit).deploy⟩
         ⊗ |Ψ_Test(threat_model).iterate⟩
         ⊗ |Ψ_Ethics(contrast).verify⟩
+        ⊗ |Ψ_Status(in_progress).timestamp("2025-10-17").owner("Ethics.Sentinel").notes("Established guardrail charter to pair lattice policies with kernel instrumentation events.").record⟩
 }⟩;
 
 ⊗ |Ψ_Phase(2).Dependencies⟩ = Ψ_{
