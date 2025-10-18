@@ -67,3 +67,45 @@ max_turns: 150
 history_processors.n: 100
 
 For full settings please refer to inference.yaml
+
+Stable open-weight alternatives
+--------------------------------
+KAT-Dev-72B-Exp remains an experimental RL variant. When you need steadier, production-friendly models with open weights and broad tooling support, the community currently gravitates toward the following options:
+
+* **Qwen2.5-Coder-32B-Instruct** – drop-in coder with strong tool use, 128K-token context, and first-class support across Hugging Face, vLLM, and Ollama.
+* **DeepSeek-Coder-V2-Instruct (MoE)** – excels at blended code + reasoning workloads; mind the mixture-of-experts memory footprint when quantizing.
+* **Llama-3.1-70B-Instruct** – balanced generalist with reliable coding skills, widely quantized by third-party runtimes.
+* **StarCoder2-15B-Instruct** – lightweight, mature ecosystem that deploys comfortably on single high-end GPUs while retaining predictable coding behavior.
+
+Practical guidance
+------------------
+* **Local single-GPU / dual-GPU dev boxes:** Begin with StarCoder2-15B-Instruct; step up to Qwen2.5-Coder-32B-Instruct if you can spare ~48–64 GB of VRAM or run a 4-bit GGUF/EXL2 quantization.
+* **On-prem servers with ample VRAM:** Lead with Qwen2.5-Coder-32B-Instruct, then experiment with DeepSeek-Coder-V2-Instruct for broader reasoning coverage.
+* **API fallback:** Closed platforms such as Claude 4 Sonnet still dominate the SWE-bench Verified leaderboards. Opt into an API when you need maximum stability and are comfortable with non-open weights.
+
+Evaluation reminders
+--------------------
+SWE-bench outcomes depend heavily on the agent scaffold (SWE-agent, OpenHands, etc.). Reuse the same scaffold when you compare KAT-Dev-72B-Exp against the models above to keep your assessments apples-to-apples. Treat KAT-Dev-72B-Exp’s 74.6% SWE-bench Verified claim as promising yet provisional until it surfaces on the community-maintained boards.
+
+Quick HF Transformers starter (alternatives)
+--------------------------------------------
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "Qwen/Qwen2.5-Coder-32B-Instruct"  # swap for meta-llama/Llama-3.1-70B-Instruct, deepseek-ai/DeepSeek-Coder-V2-Instruct, etc.
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    device_map="auto",
+    torch_dtype="auto",
+)
+
+prompt = "Write a well-documented Python CLI that tails a log and highlights ERROR lines."
+messages = [{"role": "user", "content": prompt}]
+chat = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer([chat], return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=1024, temperature=0.2)
+print(tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True))
+```
+
+For 100K-token contexts stick with Qwen2.5-Coder-32B-Instruct; Llama-3.1 and StarCoder2 expose shorter effective windows.
