@@ -6,6 +6,8 @@ const destinationPath = path.join(__dirname, '..', 'index.html');
 const docsDir = path.join(__dirname, '..', 'docs');
 const docsIndexPath = path.join(docsDir, 'index.html');
 const docsPublicDir = path.join(docsDir, 'public');
+const projectPlanSourceDir = path.join(__dirname, '..', 'project-plan');
+const projectPlanDocsDir = path.join(docsDir, 'project-plan');
 
 function copyDirectoryRecursive(from, to) {
   if (!fs.existsSync(to)) {
@@ -39,6 +41,9 @@ try {
 
   fs.writeFileSync(docsIndexPath, docsTransformed, 'utf8');
   copyDirectoryRecursive(path.join(__dirname, '..', 'public'), docsPublicDir);
+  if (fs.existsSync(projectPlanSourceDir)) {
+    copyDirectoryRecursive(projectPlanSourceDir, projectPlanDocsDir);
+  }
   console.log('Homepage synced to docs/index.html with assets');
 } catch (error) {
   console.error('Unable to sync homepage to root index.html');

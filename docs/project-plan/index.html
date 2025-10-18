@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Project Plan · Imagination Network</title>
+    <link rel="stylesheet" href="../public/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#plan-content">Skip to project plan</a>
+    <header class="site-header" role="banner">
+      <div class="site-header__inner">
+        <a class="site-logo" href="../" aria-label="Return to the Imagination Network portal">∞ Imagination Network</a>
+        <nav class="site-nav" aria-label="Project navigation">
+          <a href="../#landing-portal">Pulse</a>
+          <a href="../#topic-explorer">Explore</a>
+          <a href="../#phase-preview">Roadmap</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="plan-content" class="document-page">
+      <article class="document-card">
+        <header>
+          <p class="document-meta">
+            <span>Updated roadmap derived from <code>docs/ProjectPlan.md</code></span>
+            <span>Phase 1 focus · Interface Foundations</span>
+          </p>
+          <h1>Project Plan · Imagination Network</h1>
+          <p>
+            A grounded roadmap translating the repository&rsquo;s poetic ambition into tangible, iterative deliverables that the
+            portal team can execute.
+          </p>
+        </header>
+
+        <section aria-labelledby="current-state">
+          <h2 id="current-state">Current State Assessment</h2>
+          <ul>
+            <li>
+              <strong>Interface</strong> – A static HTML landing page served from <code>public/index.html</code> with
+              progressive-enhancement JavaScript in <code>public/app.js</code>. Users can log prompts locally, browse a generated
+              knowledge index, interact with a lightweight neural terminal, and transmit hero prompts to a configured
+              Kwaipilot <code>/chat</code> endpoint with live status feedback.
+            </li>
+            <li>
+              <strong>Data layer</strong> – No live persistence beyond <code>localStorage</code>; <code>docs/knowledge-index.json</code>
+              is a generated artifact refreshed manually with <code>npm run build:index</code>.
+            </li>
+            <li>
+              <strong>Backend &amp; services</strong> – There is no running API, agent runtime, or vector/graph database. The
+              TypeScript sources in <code>src/</code> only power offline documentation tooling.
+            </li>
+            <li>
+              <strong>Deployment</strong> – The site ships as static assets. There is no CI/CD pipeline, container image, or
+              infrastructure as code.
+            </li>
+            <li>
+              <strong>Kwaipilot gateway</strong> – The hero prompt expects a reverse proxy (default: <code>/api/kwaipilot</code>)
+              that forwards <code>/health</code> and <code>/chat</code> calls to the Kwaipilot agent. Operators can override the base
+              URL with <code>data-llm-*</code> attributes or <code>window.KWAIPILOT_BASE_URL</code>; without the gateway the UI reports
+              the agent as offline.
+            </li>
+          </ul>
+          <p>
+            The legacy roadmap assumed a fully featured AI operating system with real-time cognition. The repository currently
+            delivers an informative brochure-style experience without the supporting services that the earlier phases implied.
+          </p>
+        </section>
+
+        <section aria-labelledby="gap-analysis">
+          <h2 id="gap-analysis">Gap Analysis vs. Legacy Plan</h2>
+          <ol class="phase-list">
+            <li><strong>Missing runtime architecture</strong> – No FastAPI backend, agent bus, or Neo4j/Faiss persistence exists. Those pieces must be designed from scratch.</li>
+            <li><strong>Limited LLM integration</strong> – The hero prompt now connects to Kwaipilot, but landing portal pulses remain local and no other surfaces consume generated reflections.</li>
+            <li><strong>Ethics &amp; moderation layer</strong> – No filtering mechanisms are implemented beyond the poetic copy within the UI.</li>
+            <li><strong>Terminal simulation</strong> – The neural terminal echoes static commands and has no backend to execute imagination syntax.</li>
+            <li><strong>Operational tooling</strong> – No tests, observability, or deployment automation are defined.</li>
+          </ol>
+          <p>
+            These gaps require a refreshed plan that respects the static foundation while paving a measured path toward agentic
+            services.
+          </p>
+        </section>
+
+        <section aria-labelledby="kwaipilot-bridge">
+          <h2 id="kwaipilot-bridge">Kwaipilot Bridge Overview</h2>
+          <ul>
+            <li>
+              The hero prompt targets a configurable Kwaipilot gateway (default: <code>/api/kwaipilot</code>) mirroring the FastAPI
+              service installed via <code>scripts/install_kwaipilot_agent.sh</code>.
+            </li>
+            <li>
+              Runtime overrides are available through data attributes or <code>window.KWAIPILOT_BASE_URL</code>, enabling
+              environment-specific routing without rebuilding assets.
+            </li>
+            <li>
+              When the gateway is unreachable, the UI surfaces explicit offline messaging and logs warnings to the neural terminal so contributors understand why responses are unavailable.
+            </li>
+            <li>
+              Successful calls stream the full Kwaipilot reflection into the hero, record token counts in the terminal log, and maintain accessibility by disabling inputs while requests are in flight.
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="roadmap">
+          <h2 id="roadmap">Updated Phase Roadmap</h2>
+
+          <section aria-labelledby="phase-one">
+            <h3 id="phase-one">Phase 1 · Interface Foundations &amp; Knowledge Surface</h3>
+            <p><strong>Outcome:</strong> Deliver an accessible, content-rich portal that communicates the Imagination Network concept, captures pulses locally, and visualises knowledge-index data.</p>
+            <ul>
+              <li>Experience audit &amp; design refresh – document flows, refine hero and landing content, add responsive layout primitives, and surface live prompt/node metrics.</li>
+              <li>Client-side data services – harden local persistence, improve search and filtering UX, and expand empty-state guidance.</li>
+              <li>Knowledge index storytelling – render highlights from <code>docs/knowledge-index.json</code>, add documentation deep links, and expose update timestamps.</li>
+              <li>Kwaipilot handshake – provide resilient error messaging, document gateway configuration, and surface responses without blocking other UI flows.</li>
+            </ul>
+            <blockquote>
+              <p>
+                Success criteria: accessible homepage, live analytics for pulses and nodes, clear calls to action that align with
+                the broader roadmap, and a Kwaipilot health indicator gating hero responses when the agent is reachable.
+              </p>
+            </blockquote>
+          </section>
+
+          <section aria-labelledby="phase-two">
+            <h3 id="phase-two">Phase 2 · API Gateway &amp; Dream Node Service</h3>
+            <p><strong>Outcome:</strong> Introduce the first backend service that accepts pulses, persists them, and exposes knowledge-index queries.</p>
+            <ul>
+              <li>Define a FastAPI (or equivalent) service with persistence (SQLite/Postgres) for pulses and topic metadata.</li>
+              <li>Replace local-only storage with API calls, including optimistic UI updates and error handling.</li>
+              <li>Add authentication scaffolding and rate limiting to prepare for public interaction.</li>
+            </ul>
+            <blockquote>
+              <p>Success criteria: deployed API with automated tests, frontend consuming live endpoints, and a repeatable deployment script.</p>
+            </blockquote>
+          </section>
+
+          <section aria-labelledby="phase-three">
+            <h3 id="phase-three">Phase 3 · Agent Orchestration &amp; Ethics Layer</h3>
+            <p><strong>Outcome:</strong> Layer in orchestrated cognition features while maintaining safety guarantees.</p>
+            <ul>
+              <li>Design modular agent services (Dream, Ethics, Entity, Q) connected by an event bus or message queue.</li>
+              <li>Integrate an LLM for prompt expansion and dream-node creation, including embeddings stored in a vector database.</li>
+              <li>Implement the moderation and ethics pipeline gating agent responses before persistence.</li>
+            </ul>
+            <blockquote>
+              <p>Success criteria: demonstrable multi-agent interaction traceable through logs, moderated responses flowing to the UI, and documentation describing the ethical review flow.</p>
+            </blockquote>
+          </section>
+
+          <section aria-labelledby="phase-four">
+            <h3 id="phase-four">Phase 4 · Infinity OS Simulation (Stretch)</h3>
+            <p><strong>Outcome:</strong> Explore the original vision of an AI-powered operating system once prior foundations are reliable.</p>
+            <ul>
+              <li>Prototype imagination syntax execution in the backend terminal endpoint.</li>
+              <li>Support sandboxed agent apps running within controlled resource boundaries.</li>
+              <li>Publish extension points for external contributors and capture telemetry for continuous learning.</li>
+            </ul>
+          </section>
+        </section>
+
+        <section aria-labelledby="cross-cutting">
+          <h2 id="cross-cutting">Cross-Cutting Workstreams</h2>
+          <ul>
+            <li><strong>Documentation:</strong> Maintain living architecture diagrams, update onboarding instructions, and record regeneration steps for the knowledge index.</li>
+            <li><strong>Testing &amp; Quality:</strong> Introduce linting and unit tests in TypeScript, add UI snapshot tests, and set expectations for manual QA.</li>
+            <li><strong>Community &amp; Ethics:</strong> Define contribution guidelines emphasising safety, tone, and respectful imaginative exploration.</li>
+          </ul>
+          <p>
+            This refocused plan keeps the imaginative heart of the project alive while outlining practical milestones for the
+            caretaker collective.
+          </p>
+        </section>
+      </article>
+    </main>
+  </body>
+</html>
