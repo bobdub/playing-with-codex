@@ -21,6 +21,11 @@
   const heroPromptButton = heroPromptForm ? heroPromptForm.querySelector('button[type="submit"]') : null;
   const heroResponseContainer = document.getElementById('hero-response');
   const heroResponseText = document.getElementById('hero-response-text');
+  const heroQueueContainer = document.getElementById('hero-queue');
+  const heroQueueList = document.getElementById('hero-queue-list');
+  const heroQueueRetryAllButton = document.getElementById('hero-queue-retry-all');
+  const heroQueueClearButton = document.getElementById('hero-queue-clear');
+  const promptErrors = document.getElementById('prompt-errors');
 
   const globalCoderConfig =
     typeof window !== 'undefined' && window.CODER_CONFIG
@@ -577,8 +582,11 @@
   /** @type {{id: string; file: string; occurrences: number; preview: string; symbolPath: string[]}[]} */
   let topics = [];
   let totalTopics = 0;
+  const heroQueueStorageKey = 'imagination-network-hero-queue';
   /** @type {{prompt: string; tag: string; intensity: string; timestamp: string}[]} */
   let prompts = [];
+  /** @type {{id: string; prompt: string; reason: string; status: number | null; createdAt: string; updatedAt: string}[]} */
+  let heroQueue = [];
 
   function loadPrompts() {
     try {
@@ -600,6 +608,254 @@
       localStorage.setItem(storageKey, JSON.stringify(prompts));
     } catch (error) {
       console.warn('Unable to persist prompts', error);
+    }
+  }
+
+  function clearPromptErrors() {
+    if (!promptErrors) return;
+    promptErrors.hidden = true;
+    promptErrors.textContent = '';
+  }
+
+  function showPromptErrors(messages) {
+    if (!promptErrors || !Array.isArray(messages) || messages.length === 0) {
+      clearPromptErrors();
+      return;
+    }
+
+    promptErrors.innerHTML = '';
+    const title = document.createElement('p');
+    title.className = 'form-errors__title';
+    title.textContent = messages.length === 1 ? 'Please fix the highlighted field:' : 'Please fix the highlighted fields:';
+    promptErrors.appendChild(title);
+
+    const list = document.createElement('ul');
+    list.className = 'form-errors__list';
+    for (const message of messages) {
+      const item = document.createElement('li');
+      item.textContent = message;
+      list.appendChild(item);
+    }
+    promptErrors.appendChild(list);
+    promptErrors.hidden = false;
+    if (typeof promptErrors.focus === 'function') {
+      promptErrors.focus();
+    }
+  }
+
+  function createQueueId() {
+    return `queued-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function loadHeroQueue() {
+    try {
+      const raw = localStorage.getItem(heroQueueStorageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          heroQueue = parsed
+            .filter((entry) => entry && typeof entry.prompt === 'string')
+            .map((entry) => {
+              const createdAt = typeof entry.createdAt === 'string' ? entry.createdAt : new Date().toISOString();
+              const updatedAt = typeof entry.updatedAt === 'string' ? entry.updatedAt : createdAt;
+              return {
+                id: typeof entry.id === 'string' ? entry.id : createQueueId(),
+                prompt: entry.prompt,
+                reason: typeof entry.reason === 'string' ? entry.reason : '',
+                status:
+                  typeof entry.status === 'number' && Number.isFinite(entry.status) ? Number(entry.status) : null,
+                createdAt,
+                updatedAt,
+              };
+            });
+        }
+      }
+    } catch (error) {
+      console.warn('Unable to parse queued hero prompts', error);
+      heroQueue = [];
+    }
+    renderHeroQueue();
+  }
+
+  function saveHeroQueue() {
+    try {
+      localStorage.setItem(heroQueueStorageKey, JSON.stringify(heroQueue));
+    } catch (error) {
+      console.warn('Unable to persist queued hero prompts', error);
+    }
+  }
+
+  function renderHeroQueue() {
+    if (!heroQueueContainer || !heroQueueList) return;
+    heroQueueList.innerHTML = '';
+    if (!heroQueue || heroQueue.length === 0) {
+      heroQueueContainer.hidden = true;
+      heroQueueContainer.setAttribute('aria-hidden', 'true');
+      return;
+    }
+
+    heroQueueContainer.hidden = false;
+    heroQueueContainer.removeAttribute('aria-hidden');
+
+    const ordered = heroQueue.slice().sort((a, b) => {
+      const aTime = new Date(a.updatedAt || a.createdAt).getTime();
+      const bTime = new Date(b.updatedAt || b.createdAt).getTime();
+      return aTime - bTime;
+    });
+
+    for (const entry of ordered) {
+      const item = document.createElement('li');
+      item.className = 'hero__queue-item';
+      item.dataset.queueId = entry.id;
+
+      const body = document.createElement('div');
+      body.className = 'hero__queue-item-body';
+
+      const promptLine = document.createElement('p');
+      promptLine.className = 'hero__queue-item-prompt';
+      promptLine.textContent = entry.prompt;
+      body.appendChild(promptLine);
+
+      const meta = document.createElement('p');
+      meta.className = 'hero__queue-item-meta';
+      const timestamp = new Date(entry.updatedAt || entry.createdAt).toLocaleString();
+      const statusLabel = entry.status ? ` · HTTP ${entry.status}` : '';
+      const reasonLabel = entry.reason ? ` — ${entry.reason}` : '';
+      meta.textContent = `Stored ${timestamp}${statusLabel}${reasonLabel}`;
+      body.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'hero__queue-item-actions';
+
+      const retryButton = document.createElement('button');
+      retryButton.type = 'button';
+      retryButton.className = 'button button--secondary button--compact';
+      retryButton.dataset.queueAction = 'retry';
+      retryButton.dataset.queueId = entry.id;
+      retryButton.textContent = 'Retry now';
+      actions.appendChild(retryButton);
+
+      const dismissButton = document.createElement('button');
+      dismissButton.type = 'button';
+      dismissButton.className = 'button-link';
+      dismissButton.dataset.queueAction = 'dismiss';
+      dismissButton.dataset.queueId = entry.id;
+      dismissButton.textContent = 'Dismiss';
+      actions.appendChild(dismissButton);
+
+      item.appendChild(body);
+      item.appendChild(actions);
+      heroQueueList.appendChild(item);
+    }
+  }
+
+  function removeHeroQueueEntry(id) {
+    if (!id) return null;
+    const index = heroQueue.findIndex((entry) => entry.id === id);
+    if (index === -1) {
+      return null;
+    }
+    const [entry] = heroQueue.splice(index, 1);
+    saveHeroQueue();
+    renderHeroQueue();
+    return entry;
+  }
+
+  function removeQueuedPromptByMessage(message) {
+    if (!message) return;
+    const trimmed = message.trim();
+    if (!trimmed) return;
+    const index = heroQueue.findIndex((entry) => entry.prompt === trimmed);
+    if (index === -1) return;
+    heroQueue.splice(index, 1);
+    saveHeroQueue();
+    renderHeroQueue();
+  }
+
+  function queueHeroPrompt(message, reason, metadata = {}) {
+    if (!message || typeof message !== 'string') return;
+    const trimmed = message.trim();
+    if (!trimmed) return;
+    const status = metadata && typeof metadata.status === 'number' && Number.isFinite(metadata.status)
+      ? Number(metadata.status)
+      : null;
+    const now = new Date().toISOString();
+    const existing = heroQueue.find((entry) => entry.prompt === trimmed);
+    if (existing) {
+      existing.reason = reason || existing.reason;
+      existing.status = status;
+      existing.updatedAt = now;
+    } else {
+      heroQueue.push({
+        id: createQueueId(),
+        prompt: trimmed,
+        reason: reason || '',
+        status,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+    saveHeroQueue();
+    renderHeroQueue();
+    logToTerminal(`Stored prompt for retry: "${trimmed}"${status ? ` · HTTP ${status}` : ''}`, 'system');
+  }
+
+  async function retryHeroPrompt(id) {
+    if (!id) return;
+    if (!coderBridge.endpoints.chat) {
+      updateHeroStatus(
+        'offline',
+        `${providerShortLabel} endpoint is not configured. Configure the gateway to enable live responses.`,
+      );
+      return;
+    }
+    const entry = removeHeroQueueEntry(id);
+    if (!entry) return;
+    setHeroPromptBusy(true);
+    updateHeroStatus('sending', `Transmitting intention to ${providerShortLabel}…`);
+    try {
+      await sendHeroPromptMessage(entry.prompt, { focusOnComplete: false, clearInputOnSuccess: false });
+      logToTerminal(`Queued prompt delivered: "${entry.prompt}"`, 'system');
+    } catch (error) {
+      const status = typeof error === 'object' && error && 'status' in error ? Number(error.status) : null;
+      queueHeroPrompt(entry.prompt, normaliseError(error), { status });
+    }
+  }
+
+  async function retryAllHeroQueue() {
+    if (!heroQueue || heroQueue.length === 0) return;
+    if (!coderBridge.endpoints.chat) {
+      updateHeroStatus(
+        'offline',
+        `${providerShortLabel} endpoint is not configured. Configure the gateway to enable live responses.`,
+      );
+      return;
+    }
+    const pending = heroQueue.slice();
+    for (const entry of pending) {
+      // eslint-disable-next-line no-await-in-loop
+      await retryHeroPrompt(entry.id);
+    }
+  }
+
+  function clearHeroQueue() {
+    if (!heroQueue || heroQueue.length === 0) return;
+    heroQueue = [];
+    saveHeroQueue();
+    renderHeroQueue();
+  }
+
+  function handleHeroQueueClick(event) {
+    const target = event.target;
+    if (!target || !(target instanceof HTMLElement)) return;
+    const action = target.dataset.queueAction;
+    const id = target.dataset.queueId;
+    if (!action || !id) return;
+    event.preventDefault();
+    if (action === 'retry') {
+      retryHeroPrompt(id);
+    } else if (action === 'dismiss') {
+      removeHeroQueueEntry(id);
     }
   }
 
@@ -741,30 +997,9 @@
     await checkCoderHealth(resolution.payload);
   }
 
-  async function handleHeroPromptSubmit(event) {
-    if (!heroPromptInput || !heroResponseText) return;
-    event.preventDefault();
-    const message = heroPromptInput.value.trim();
-    if (!message) {
-      updateHeroStatus('warning', `Share a prompt so Infinity can calibrate the ${providerShortLabel} channel.`);
-      heroPromptInput.focus();
-      return;
-    }
-
-    if (!coderBridge.endpoints.chat) {
-      updateHeroStatus(
-        'offline',
-        `${providerShortLabel} endpoint is not configured. Configure the gateway to enable live responses.`,
-      );
-      return;
-    }
-
-    setHeroPromptBusy(true);
-    updateHeroStatus('sending', `Transmitting intention to ${providerShortLabel}…`);
-
-    let shouldRefocus = false;
+  async function sendHeroPromptMessage(message, options = {}) {
+    const { focusOnComplete = true, clearInputOnSuccess = true } = options;
     let fallbackModel = null;
-
     try {
       const payload = await (async () => {
         let lastError;
@@ -809,8 +1044,10 @@
       if (fallbackModel && (!responseModel || fallbackModel !== responseModel)) {
         logToTerminal(`${providerShortLabel} fallback channel confirmed (${fallbackModel}).`, 'system');
       }
-      heroPromptInput.value = '';
-      shouldRefocus = true;
+      if (clearInputOnSuccess && heroPromptInput) {
+        heroPromptInput.value = '';
+      }
+      return payload;
     } catch (error) {
       const status = typeof error === 'object' && error && 'status' in error ? Number(error.status) : undefined;
       const reason = normaliseError(error);
@@ -824,12 +1061,47 @@
         updateHeroStatus('error', `${providerShortLabel} request failed: ${reason}`);
         logToTerminal(`${providerShortLabel} request failed: ${reason}`, 'error');
       }
-      shouldRefocus = true;
+      if (status !== undefined && typeof error === 'object' && error) {
+        error.status = status;
+      }
+      throw error;
     } finally {
       setHeroPromptBusy(false);
-      if (shouldRefocus && heroPromptInput) {
+      if (focusOnComplete && heroPromptInput) {
         heroPromptInput.focus();
       }
+    }
+  }
+
+  async function handleHeroPromptSubmit(event) {
+    if (!heroPromptInput || !heroResponseText) return;
+    event.preventDefault();
+    const message = heroPromptInput.value.trim();
+    if (!message) {
+      updateHeroStatus('warning', `Share a prompt so Infinity can calibrate the ${providerShortLabel} channel.`);
+      heroPromptInput.focus();
+      return;
+    }
+
+    if (!coderBridge.endpoints.chat) {
+      updateHeroStatus(
+        'offline',
+        `${providerShortLabel} endpoint is not configured. Configure the gateway to enable live responses.`,
+      );
+      queueHeroPrompt(message, `${providerShortLabel} endpoint is not configured.`, { status: 503 });
+      heroPromptInput.focus();
+      return;
+    }
+
+    setHeroPromptBusy(true);
+    updateHeroStatus('sending', `Transmitting intention to ${providerShortLabel}…`);
+
+    try {
+      await sendHeroPromptMessage(message, { focusOnComplete: true, clearInputOnSuccess: true });
+      removeQueuedPromptByMessage(message);
+    } catch (error) {
+      const status = typeof error === 'object' && error && 'status' in error ? Number(error.status) : null;
+      queueHeroPrompt(message, normaliseError(error), { status });
     }
   }
 
@@ -1048,10 +1320,25 @@
   function handlePromptSubmit(event) {
     event.preventDefault();
     const prompt = promptInput.value.trim();
+    const errors = [];
     if (!prompt) {
-      promptInput.focus();
+      errors.push('Enter a prompt before transmitting the pulse.');
+      if (promptInput) {
+        promptInput.setAttribute('aria-invalid', 'true');
+      }
+    } else if (promptInput) {
+      promptInput.removeAttribute('aria-invalid');
+    }
+
+    if (errors.length > 0) {
+      showPromptErrors(errors);
+      if (promptInput) {
+        promptInput.focus();
+      }
       return;
     }
+
+    clearPromptErrors();
     const tag = promptTagInput.value.trim();
     const intensity = promptIntensity.value;
     const entry = {
@@ -1147,14 +1434,38 @@
   if (promptForm) {
     promptForm.addEventListener('submit', handlePromptSubmit);
   }
+  if (promptInput) {
+    promptInput.addEventListener('input', () => {
+      if (promptInput.value.trim()) {
+        promptInput.removeAttribute('aria-invalid');
+        clearPromptErrors();
+      }
+    });
+  }
   if (searchInput) {
     searchInput.addEventListener('input', handleSearch);
   }
   if (terminalForm) {
     terminalForm.addEventListener('submit', handleTerminalSubmit);
   }
+  if (heroQueueList) {
+    heroQueueList.addEventListener('click', handleHeroQueueClick);
+  }
+  if (heroQueueRetryAllButton) {
+    heroQueueRetryAllButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      retryAllHeroQueue();
+    });
+  }
+  if (heroQueueClearButton) {
+    heroQueueClearButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      clearHeroQueue();
+    });
+  }
 
   loadPrompts();
+  loadHeroQueue();
   loadKnowledgeIndex();
   initializeCoderBridge();
   logToTerminal('Neural terminal initialized. Type "help" to see available commands.');
