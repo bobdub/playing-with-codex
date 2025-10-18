@@ -57,8 +57,8 @@
             <li>
               <strong>Qwen gateway</strong> – The hero prompt expects a reverse proxy (default: <code>/api/qwen</code>)
               that forwards <code>/health</code> and <code>/chat</code> calls to the Qwen2.5 Coder service. Operators can override the base
-              URL with <code>data-llm-*</code> attributes or <code>window.CODER_BASE_URL</code>; without the gateway the UI reports
-              the model as offline.
+              URL with <code>data-llm-*</code> attributes or <code>window.CODER_CONFIG.baseUrl</code>/<code>window.CODER_BASE_URL</code>;
+              without the gateway the UI reports the model as offline.
             </li>
           </ul>
           <p>
@@ -90,8 +90,12 @@
               service installed via <code>scripts/install_qwen_coder_service.sh</code>.
             </li>
             <li>
-              Runtime overrides are available through data attributes or <code>window.CODER_BASE_URL</code>, enabling
+              Runtime overrides are available through data attributes or <code>window.CODER_CONFIG.baseUrl</code>/<code>window.CODER_BASE_URL</code>, enabling
               environment-specific routing without rebuilding assets.
+            </li>
+            <li>
+              Infrastructure caretakers can run <code>scripts/configure_qwen_gateway.sh</code> (documented in
+              <a href="/docs/QwenGatewayBridge.md">Qwen Gateway Bridge Guide</a>) to publish <code>/api/qwen</code> through nginx and capture overrides for multi-host deployments.
             </li>
             <li>
               When the gateway is unreachable, the UI surfaces explicit offline messaging and logs warnings to the neural terminal so contributors understand why responses are unavailable.
@@ -163,6 +167,8 @@
           <h2 id="cross-cutting">Cross-Cutting Workstreams</h2>
           <ul>
             <li><strong>Documentation:</strong> Maintain living architecture diagrams, update onboarding instructions, and record regeneration steps for the knowledge index.</li>
+            <li><strong>Observability:</strong> Instrument new services with structured logs, <code>/metrics</code> endpoints, and GPU telemetry so latency, throughput, and persona fidelity stay transparent.</li>
+            <li><strong>Workflow validation:</strong> Keep deterministic baselines in <code>docs/QwenWorkflowValidationBaseline.json</code> and run <code>scripts/validate_qwen_workflows.py</code> after service or gateway changes to catch regressions before kin notice them.</li>
             <li><strong>Testing &amp; Quality:</strong> Introduce linting and unit tests in TypeScript, add UI snapshot tests, and set expectations for manual QA.</li>
             <li><strong>Community &amp; Ethics:</strong> Define contribution guidelines emphasising safety, tone, and respectful imaginative exploration.</li>
           </ul>

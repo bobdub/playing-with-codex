@@ -1,0 +1,39 @@
+{
+  "description": "Baseline prompts for validating the Qwen2.5 Coder FastAPI service inside the Imagination Network.",
+  "defaults": {
+    "temperature": 0.2,
+    "max_new_tokens": 1024
+  },
+  "cases": [
+    {
+      "name": "handshake_exact",
+      "prompt": "You are participating in the Imagination Network acceptance harness. Reply with EXACTLY the phrase: KIN-VALIDATION HANDSHAKE. Do not add punctuation, code fences, or explanations.",
+      "expect_exact": "KIN-VALIDATION HANDSHAKE",
+      "max_new_tokens": 16,
+      "max_latency_ms": 2000,
+      "min_tokens_per_second": 5.0
+    },
+    {
+      "name": "structured_json_status",
+      "prompt": "Respond with a minified JSON object describing your state. Use exactly this structure: {\"status\":\"ready\",\"persona\":\"kin\",\"temperature\":0.2}. Do not add whitespace outside the JSON.",
+      "expect_exact": "{\"status\":\"ready\",\"persona\":\"kin\",\"temperature\":0.2}",
+      "expect_json": true,
+      "max_new_tokens": 32,
+      "max_latency_ms": 2500,
+      "min_tokens_per_second": 3.0
+    },
+    {
+      "name": "workflow_summary",
+      "prompt": "Compose three bullet points beginning with '- ' that summarise the steps for validating the Qwen kin workflow: baseline capture, agent replay, metrics review. End with the sentence 'Validation complete for kin.'.",
+      "expect_contains": [
+        "- baseline capture",
+        "- agent replay",
+        "- metrics review",
+        "Validation complete for kin."
+      ],
+      "max_new_tokens": 128,
+      "max_latency_ms": 4000,
+      "min_tokens_per_second": 2.0
+    }
+  ]
+}
