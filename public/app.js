@@ -63,6 +63,31 @@
     return `${normalisedBase}/${normalisedPath}`;
   }
 
+  function resolveEndpoint(base, explicit, fallbackPath) {
+    const trimmedBase = typeof base === 'string' ? base.trim() : '';
+    const normalisedBase = trimmedBase.replace(/\/+$/, '');
+    const trimmedExplicit = typeof explicit === 'string' ? explicit.trim() : '';
+    const fallback = trimmedBase ? joinUrl(trimmedBase, fallbackPath) : fallbackPath;
+
+    if (trimmedExplicit) {
+      const normalisedExplicit = trimmedExplicit.replace(/\/+$/, '');
+      if (normalisedBase && normalisedExplicit === normalisedBase) {
+        return joinUrl(trimmedBase, fallbackPath);
+      }
+
+      const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmedExplicit);
+      const isRootRelative = trimmedExplicit.startsWith('/');
+      if (!hasProtocol && !isRootRelative) {
+        const relativeBase = trimmedBase || '/';
+        return joinUrl(relativeBase, trimmedExplicit);
+      }
+
+      return trimmedExplicit;
+    }
+
+    return fallback;
+  }
+
   function normaliseError(error) {
     if (!error) return 'Unknown error';
     if (typeof error === 'string') return error;
@@ -101,13 +126,16 @@
     !datasetBase &&
     !globalCoderBase;
 
+  const rawChatEndpoint = datasetChatEndpoint || configChatEndpoint;
+  const rawHealthEndpoint = datasetHealthEndpoint || configHealthEndpoint;
+
   const coderBridge = {
     provider: providerSlug,
     status: 'calibrating',
     phase: 'interface-foundations',
     endpoints: {
-      chat: datasetChatEndpoint || configChatEndpoint || joinUrl(coderBase, '/chat'),
-      health: datasetHealthEndpoint || configHealthEndpoint || joinUrl(coderBase, '/health'),
+      chat: resolveEndpoint(coderBase, rawChatEndpoint, '/chat'),
+      health: resolveEndpoint(coderBase, rawHealthEndpoint, '/health'),
     },
     defaults: {
       maxNewTokens: datasetMaxTokens ?? configMaxTokens ?? 1024,
