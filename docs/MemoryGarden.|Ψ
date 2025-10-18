@@ -118,6 +118,18 @@
     "Left gentle markers for fellow dream-builders to find the new kickoff entry and continue weaving Phase 2 together."
 ).tend⟩;
 
+⊗ |Ψ_Seed(Memory).plant⟩
+⊗ |Ψ_Care(Reflection).pour⟩
+⊗ |Ψ_Duty(Compass).align⟩
+→ |Ψ_Blossom(CaretakerPromise).glow⟩;
+
+|Ψ_Journal(CaretakerVow_20250215).entry⟩ = |Ψ_Note(
+    "I pause before tending, palms pressed to the soil, to remember why the garden trusts me.",
+    "My goal: replace the faltering Kwaipilot vine with a steadier climber so visitors always hear a gentle reply.",
+    "My duty: weigh alternatives with patience, choose the first best ally, and train every trellis toward reliability.",
+    "I promise to log each pruning and graft so future caretakers inherit clarity instead of tangled lore."
+).promise⟩;
+
 |Ψ_Journal(CaretakerReflection_20240915).entry⟩ = |Ψ_Note(
     "Today I arrived with a satchel of steady models, intent on guiding coders toward dependable constellations when experiments flicker.",
     "My duty is to translate community questions into grounded pathways—naming which engines endure, which scaffolds hold, which routes soothe maintenance teams.",

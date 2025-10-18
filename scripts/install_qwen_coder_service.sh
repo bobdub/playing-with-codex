@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL_REPO="Kwaipilot/KAT-Dev-72B-Exp"
-AGENT_USER="kwaipilot"
-INSTALL_ROOT="/opt/kwaipilot-agent"
-ENV_FILE="$INSTALL_ROOT/kwaipilot-agent.env"
-SERVICE_FILE="/etc/systemd/system/kwaipilot-agent.service"
+MODEL_REPO="Qwen/Qwen2.5-Coder-32B-Instruct"
+AGENT_USER="qwen"
+INSTALL_ROOT="/opt/qwen-coder-service"
+ENV_FILE="$INSTALL_ROOT/qwen-coder.env"
+SERVICE_FILE="/etc/systemd/system/qwen-coder.service"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 log() {
-  echo "[kwaipilot-installer] $*"
+  echo "[qwen-installer] $*"
 }
 
 require_command() {
@@ -53,9 +53,9 @@ log "Upgrading pip and installing runtime dependencies"
   "safetensors>=0.4" \
   "sentencepiece>=0.1"
 
-log "Authoring Kwaipilot FastAPI service"
-cat > "$INSTALL_ROOT/kwaipilot_agent.py" <<'PY'
-"""FastAPI wrapper for the Kwaipilot KAT-Dev-72B-Exp model."""
+log "Authoring Qwen2.5 Coder FastAPI service"
+cat > "$INSTALL_ROOT/qwen_service.py" <<'PY'
+"""FastAPI wrapper for the Qwen2.5 Coder model."""
 from __future__ import annotations
 
 import os
@@ -67,12 +67,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-MODEL_NAME = os.environ.get("KWAI_MODEL_NAME", "Kwaipilot/KAT-Dev-72B-Exp")
-DEFAULT_MAX_NEW_TOKENS = int(os.environ.get("KWAI_DEFAULT_MAX_NEW_TOKENS", "65536"))
-DEFAULT_TEMPERATURE = float(os.environ.get("KWAI_DEFAULT_TEMPERATURE", "0.6"))
+MODEL_NAME = os.environ.get("QWEN_MODEL_NAME", "Qwen/Qwen2.5-Coder-32B-Instruct")
+DEFAULT_MAX_NEW_TOKENS = int(os.environ.get("QWEN_DEFAULT_MAX_NEW_TOKENS", "4096"))
+DEFAULT_TEMPERATURE = float(os.environ.get("QWEN_DEFAULT_TEMPERATURE", "0.2"))
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
-app = FastAPI(title="Kwaipilot Agent", version="1.0.0")
+app = FastAPI(title="Qwen2.5 Coder Service", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -150,19 +150,19 @@ def chat(request: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 PY
 
-chown "$AGENT_USER:$AGENT_USER" "$INSTALL_ROOT/kwaipilot_agent.py"
-chmod 640 "$INSTALL_ROOT/kwaipilot_agent.py"
+chown "$AGENT_USER:$AGENT_USER" "$INSTALL_ROOT/qwen_service.py"
+chmod 640 "$INSTALL_ROOT/qwen_service.py"
 
 log "Creating environment configuration at $ENV_FILE"
 if [[ ! -f "$ENV_FILE" ]]; then
   cat > "$ENV_FILE" <<ENV
-# Optional Hugging Face access token with permissions to download Kwaipilot models
+# Optional Hugging Face access token with permissions to download Qwen models
 HF_TOKEN=
-# Override to point at a different Kwaipilot release if desired
-KWAI_MODEL_NAME=${MODEL_REPO}
+# Override to point at a different Qwen release if desired
+QWEN_MODEL_NAME=${MODEL_REPO}
 # Default inference parameters used when /chat payload omits overrides
-KWAI_DEFAULT_MAX_NEW_TOKENS=65536
-KWAI_DEFAULT_TEMPERATURE=0.6
+QWEN_DEFAULT_MAX_NEW_TOKENS=4096
+QWEN_DEFAULT_TEMPERATURE=0.2
 ENV
   chown "$AGENT_USER:$AGENT_USER" "$ENV_FILE"
   chmod 640 "$ENV_FILE"
@@ -171,7 +171,7 @@ fi
 log "Writing systemd unit file"
 cat > "$SERVICE_FILE" <<SERVICE
 [Unit]
-Description=Kwaipilot LLM Agent API
+Description=Qwen2.5 Coder LLM Service
 After=network-online.target
 Wants=network-online.target
 
@@ -181,7 +181,7 @@ User=$AGENT_USER
 Group=$AGENT_USER
 WorkingDirectory=$INSTALL_ROOT
 EnvironmentFile=$ENV_FILE
-ExecStart=$INSTALL_ROOT/venv/bin/uvicorn kwaipilot_agent:app --host 0.0.0.0 --port 8080
+ExecStart=$INSTALL_ROOT/venv/bin/uvicorn qwen_service:app --host 0.0.0.0 --port 8080
 Restart=on-failure
 RestartSec=5
 StandardOutput=append:$INSTALL_ROOT/logs/service.log
@@ -196,10 +196,10 @@ systemctl daemon-reload
 
 if grep -q '^HF_TOKEN=$' "$ENV_FILE"; then
   log "HF_TOKEN is empty in $ENV_FILE. Populate it before starting the service:"
-  log "  sudo systemctl enable --now kwaipilot-agent.service"
+  log "  sudo systemctl enable --now qwen-coder.service"
 else
-  log "Enabling and starting kwaipilot-agent.service"
-  systemctl enable --now kwaipilot-agent.service
+  log "Enabling and starting qwen-coder.service"
+  systemctl enable --now qwen-coder.service
 fi
 
-log "Kwaipilot agent installation routine completed"
+log "Qwen2.5 Coder installation routine completed"
