@@ -94,7 +94,7 @@ Ensure firewalls permit traffic from the gateway host to the service node on por
 The portal looks for the gateway in this order:
 
 1. `data-llm-*` attributes on `#hero-prompt-form` (see `public/index.html`).
-2. `window.CODER_CONFIG` properties: `baseUrl`, `chatEndpoint`, `healthEndpoint`, `maxNewTokens`, `temperature`.
+2. `window.CODER_CONFIG` properties: `baseUrl`, `chatEndpoint`, `healthEndpoint`, `maxNewTokens`, `temperature`, plus optional `provider`, `label`, `shortLabel`, `model`, `systemPrompt`, `chatCompletionsEndpoint`, `apiKey`, `authHeader`, and `authScheme`.
 3. `window.CODER_BASE_URL` (legacy override).
 4. Fallback `/api/qwen` relative to the current origin.
 
@@ -108,11 +108,23 @@ Set overrides by inserting a script before `app.js` on environments where the ga
     healthEndpoint: 'https://kin-gateway.internal/api/qwen/health',
     maxNewTokens: 2048,
     temperature: 0.2,
+    apiKey: 'token-from-secret-manager',
+    authHeader: 'Authorization',
+    authScheme: 'Bearer',
+    chatCompletionsEndpoint: 'https://kin-gateway.internal/api/qwen/v1/chat/completions',
+    model: 'qwen2.5-coder',
+    systemPrompt: 'You are the caretaker persona anchoring the hero prompt.',
   };
 </script>
 ```
 
 Alternatively, set a single `window.CODER_BASE_URL` if only the base path changes.
+
+### Dataset overrides and OpenAI-compatible fallback
+
+- `data-llm-api-key`, `data-llm-auth-header`, and `data-llm-auth-scheme` attach credentials without shipping them through `window` globals.
+- `data-llm-model`, `data-llm-system-prompt`, and `data-llm-chat-completions` fine-tune the OpenAI-compatible fallback that now activates when `/chat` returns a 400/404/405/422 response.
+- When both endpoints are reachable, the hero prompt prefers `/chat` but automatically retries with `/v1/chat/completions`, normalising OpenAI-style responses back into the interface logs.
 
 ## 4. Verify the bridge
 

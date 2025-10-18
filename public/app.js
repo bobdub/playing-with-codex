@@ -158,9 +158,241 @@
     return chatBase || healthBase || null;
   }
 
-  const providerLabel = 'Qwen2.5 Coder';
-  const providerShortLabel = 'Qwen';
-  const providerSlug = 'qwen';
+  function buildAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const auth = coderBridge.auth;
+    if (!auth || !auth.token || !auth.header || typeof auth.header !== 'string') {
+      return headers;
+    }
+    let tokenValue = typeof auth.token === 'string' ? auth.token : String(auth.token);
+    if (auth.header.toLowerCase() === 'authorization') {
+      const scheme = (auth.scheme || 'Bearer').trim();
+      const lowerToken = tokenValue.toLowerCase();
+      const lowerScheme = scheme.toLowerCase();
+      if (!lowerToken.startsWith(`${lowerScheme} `)) {
+        tokenValue = `${scheme} ${tokenValue}`;
+      }
+    }
+    headers[auth.header] = tokenValue;
+    return headers;
+  }
+
+  function normaliseOpenAIMessageContent(content) {
+    if (typeof content === 'string') {
+      return content;
+    }
+    if (Array.isArray(content)) {
+      return content
+        .map((part) => {
+          if (typeof part === 'string') return part;
+          if (part && typeof part === 'object') {
+            if (typeof part.text === 'string') return part.text;
+            if (typeof part.content === 'string') return part.content;
+          }
+          return '';
+        })
+        .join('');
+    }
+    if (content && typeof content === 'object') {
+      if (typeof content.text === 'string') return content.text;
+      if (typeof content.content === 'string') return content.content;
+    }
+    return '';
+  }
+
+  function normaliseChatCompletionPayload(payload) {
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+    if (typeof payload.response === 'string') {
+      const trimmed = payload.response.trim();
+      const tokens = typeof payload.tokens_generated === 'number' ? payload.tokens_generated : null;
+      const modelName = typeof payload.model === 'string' ? payload.model : null;
+      return { completion: trimmed, tokens, model: modelName };
+    }
+    if (Array.isArray(payload.choices)) {
+      const choice =
+        payload.choices.find((item) => item && item.message && item.message.role === 'assistant') ||
+        payload.choices.find((item) => item && item.delta) ||
+        payload.choices[0];
+      if (!choice) {
+        return { completion: '', tokens: null, model: null };
+      }
+      const usage = payload.usage && typeof payload.usage === 'object' ? payload.usage : null;
+      const completionTokens =
+        usage && typeof usage.completion_tokens === 'number'
+          ? usage.completion_tokens
+          : usage && typeof usage.total_tokens === 'number'
+            ? usage.total_tokens
+            : null;
+      const modelName = typeof payload.model === 'string' ? payload.model : null;
+      if (choice.message) {
+        const message = choice.message;
+        const content = normaliseOpenAIMessageContent(message.content);
+        return { completion: content.trim(), tokens: completionTokens, model: modelName };
+      }
+      if (typeof choice.text === 'string') {
+        return { completion: choice.text.trim(), tokens: completionTokens, model: modelName };
+      }
+    }
+    return null;
+  }
+
+  function buildResponseObject(payload, source) {
+    const normalised = normaliseChatCompletionPayload(payload);
+    if (normalised) {
+      return {
+        response: normalised.completion,
+        tokens_generated:
+          normalised.tokens ?? (typeof payload.tokens_generated === 'number' ? payload.tokens_generated : null),
+        model: normalised.model ?? (typeof payload.model === 'string' ? payload.model : undefined),
+        raw: payload,
+        source,
+      };
+    }
+    if (payload && typeof payload.response === 'string') {
+      return {
+        response: payload.response.trim(),
+        tokens_generated:
+          typeof payload.tokens_generated === 'number' ? payload.tokens_generated : null,
+        model: typeof payload.model === 'string' ? payload.model : undefined,
+        raw: payload,
+        source,
+      };
+    }
+    if (payload && typeof payload === 'object') {
+      let serialised = '';
+      try {
+        serialised = JSON.stringify(payload);
+      } catch (serializationError) {
+        serialised = String(payload);
+      }
+      return { response: serialised, tokens_generated: null, raw: payload, source };
+    }
+    return { response: String(payload ?? ''), tokens_generated: null, raw: payload, source };
+  }
+
+  function resolveOpenAIChatEndpoint() {
+    if (coderBridge.openAI && coderBridge.openAI.chatCompletionsEndpoint) {
+      return coderBridge.openAI.chatCompletionsEndpoint;
+    }
+    const chatEndpoint = coderBridge.endpoints.chat;
+    const healthEndpoint = coderBridge.endpoints.health;
+    if (chatEndpoint && /\/v1\/chat\/completions/i.test(chatEndpoint)) {
+      return chatEndpoint;
+    }
+    const base = inferGatewayBase(chatEndpoint, healthEndpoint);
+    if (base) {
+      return joinUrl(base, '/v1/chat/completions');
+    }
+    if (chatEndpoint && /\/chat(?:\/)?$/i.test(chatEndpoint)) {
+      return chatEndpoint.replace(/\/chat(?:\/)?$/i, '/v1/chat/completions');
+    }
+    if (chatEndpoint) {
+      const trimmed = chatEndpoint.replace(/\/+$/, '');
+      if (trimmed) {
+        const suffix = /\/v\d+$/i.test(trimmed) ? 'chat/completions' : 'v1/chat/completions';
+        return joinUrl(trimmed, suffix);
+      }
+    }
+    return null;
+  }
+
+  async function postJson(url, payload, headers) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`;
+      try {
+        const errorPayload = await response.json();
+        if (errorPayload) {
+          if (typeof errorPayload.detail === 'string') {
+            detail = errorPayload.detail;
+          } else if (typeof errorPayload.error === 'string') {
+            detail = errorPayload.error;
+          } else if (
+            errorPayload.error &&
+            typeof errorPayload.error === 'object' &&
+            typeof errorPayload.error.message === 'string'
+          ) {
+            detail = errorPayload.error.message;
+          }
+        }
+      } catch (jsonError) {
+        try {
+          const text = await response.text();
+          if (text) {
+            detail = text;
+          }
+        } catch (textError) {
+          // Ignore secondary parsing issues
+        }
+      }
+
+      const httpError = new Error(detail);
+      httpError.status = response.status;
+      httpError.url = url;
+      throw httpError;
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const parsed = await response.json();
+      return { payload: parsed, response };
+    }
+    const text = await response.text();
+    return { payload: { response: text, tokens_generated: null }, response };
+  }
+
+  const datasetProvider = heroPromptForm && heroPromptForm.dataset.llmProvider;
+  const configProvider =
+    globalCoderConfig && typeof globalCoderConfig.provider === 'string' ? globalCoderConfig.provider : null;
+  const providerSlug = (datasetProvider || configProvider || 'qwen').toLowerCase();
+  const datasetProviderLabel = heroPromptForm && heroPromptForm.dataset.llmLabel;
+  const configProviderLabel =
+    globalCoderConfig && typeof globalCoderConfig.label === 'string' ? globalCoderConfig.label : undefined;
+  const providerFallbackLabel =
+    providerSlug === 'openai'
+      ? 'OpenAI Chat'
+      : providerSlug === 'anthropic'
+        ? 'Claude'
+        : providerSlug === 'mistral'
+          ? 'Mistral'
+          : 'Qwen2.5 Coder';
+  const providerLabel = datasetProviderLabel || configProviderLabel || providerFallbackLabel;
+  const datasetProviderShortLabel = heroPromptForm && heroPromptForm.dataset.llmShortLabel;
+  const configProviderShortLabel =
+    globalCoderConfig && typeof globalCoderConfig.shortLabel === 'string' ? globalCoderConfig.shortLabel : undefined;
+  const providerShortLabel =
+    datasetProviderShortLabel ||
+    configProviderShortLabel ||
+    (providerLabel && providerLabel.split(/\s+/)[0] ? providerLabel.split(/\s+/)[0] : providerSlug.toUpperCase());
+
+  const datasetModel = heroPromptForm && heroPromptForm.dataset.llmModel;
+  const configModel = globalCoderConfig && typeof globalCoderConfig.model === 'string' ? globalCoderConfig.model : undefined;
+  const datasetSystemPrompt = heroPromptForm && heroPromptForm.dataset.llmSystemPrompt;
+  const configSystemPrompt =
+    globalCoderConfig && typeof globalCoderConfig.systemPrompt === 'string' ? globalCoderConfig.systemPrompt : undefined;
+  const datasetApiKey = heroPromptForm && heroPromptForm.dataset.llmApiKey;
+  const configApiKey =
+    globalCoderConfig && typeof globalCoderConfig.apiKey === 'string' ? globalCoderConfig.apiKey : undefined;
+  const windowApiKey =
+    typeof window !== 'undefined' && typeof window.CODER_API_KEY === 'string' ? window.CODER_API_KEY : undefined;
+  const datasetAuthHeader = heroPromptForm && heroPromptForm.dataset.llmAuthHeader;
+  const configAuthHeader =
+    globalCoderConfig && typeof globalCoderConfig.authHeader === 'string' ? globalCoderConfig.authHeader : undefined;
+  const datasetAuthScheme = heroPromptForm && heroPromptForm.dataset.llmAuthScheme;
+  const configAuthScheme =
+    globalCoderConfig && typeof globalCoderConfig.authScheme === 'string' ? globalCoderConfig.authScheme : undefined;
+  const datasetChatCompletionsEndpoint = heroPromptForm && heroPromptForm.dataset.llmChatCompletions;
+  const configChatCompletionsEndpoint =
+    globalCoderConfig && typeof globalCoderConfig.chatCompletionsEndpoint === 'string'
+      ? globalCoderConfig.chatCompletionsEndpoint
+      : undefined;
 
   const datasetBase = heroPromptForm && heroPromptForm.dataset.llmBase;
   const fallbackBaseUrl = '/api/qwen';
@@ -182,8 +414,22 @@
   const rawChatEndpoint = datasetChatEndpoint || configChatEndpoint;
   const rawHealthEndpoint = datasetHealthEndpoint || configHealthEndpoint;
 
+  const authHeader =
+    datasetAuthHeader ||
+    configAuthHeader ||
+    (datasetApiKey || configApiKey || windowApiKey ? 'Authorization' : undefined);
+  let authScheme = datasetAuthScheme || configAuthScheme || null;
+  if (!authScheme && authHeader && authHeader.toLowerCase() === 'authorization') {
+    authScheme = 'Bearer';
+  }
+
+  const chatCompletionsOverride = datasetChatCompletionsEndpoint || configChatCompletionsEndpoint || null;
+  const resolvedApiKey = datasetApiKey || configApiKey || windowApiKey || null;
+
   const coderBridge = {
     provider: providerSlug,
+    label: providerLabel,
+    shortLabel: providerShortLabel,
     status: 'calibrating',
     phase: 'interface-foundations',
     endpoints: {
@@ -193,6 +439,17 @@
     defaults: {
       maxNewTokens: datasetMaxTokens ?? configMaxTokens ?? 1024,
       temperature: datasetTemperature ?? configTemperature ?? 0.2,
+      model: datasetModel || configModel || null,
+    },
+    auth: {
+      header: authHeader || null,
+      scheme: authScheme,
+      token: resolvedApiKey,
+    },
+    openAI: {
+      systemPrompt: datasetSystemPrompt || configSystemPrompt || '',
+      model: datasetModel || configModel || null,
+      chatCompletionsEndpoint: chatCompletionsOverride,
     },
   };
 
@@ -347,6 +604,7 @@
   }
 
   async function requestCoderResponse(prompt) {
+    const headers = buildAuthHeaders();
     const payload = { prompt };
     if (typeof coderBridge.defaults.maxNewTokens === 'number') {
       payload.max_new_tokens = coderBridge.defaults.maxNewTokens;
@@ -355,43 +613,71 @@
       payload.temperature = coderBridge.defaults.temperature;
     }
 
-    const response = await fetch(coderBridge.endpoints.chat, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      let detail = `HTTP ${response.status}`;
-      try {
-        const errorPayload = await response.json();
-        if (errorPayload && typeof errorPayload.detail === 'string') {
-          detail = errorPayload.detail;
-        }
-      } catch (parseError) {
-        // Ignore JSON parse issues and surface the HTTP code instead
-      }
-
-      if (response.status === 405) {
-        detail =
+    let primaryError = null;
+    try {
+      const { payload: primaryPayload } = await postJson(coderBridge.endpoints.chat, payload, headers);
+      return buildResponseObject(primaryPayload, 'chat');
+    } catch (error) {
+      primaryError = error;
+      const status = typeof error === 'object' && error && 'status' in error ? Number(error.status) : undefined;
+      if (status === 405) {
+        error.message =
           `${providerShortLabel} gateway rejected the request. Configure the reverse proxy to allow POST /chat requests.`;
-      } else if (response.status === 404) {
-        detail = `${providerShortLabel} gateway endpoint not found. Configure the reverse proxy to expose /chat.`;
+      } else if (status === 404) {
+        error.message = `${providerShortLabel} gateway endpoint not found. Configure the reverse proxy to expose /chat.`;
       }
-
-      const httpError = new Error(detail);
-      httpError.status = response.status;
-      throw httpError;
+      if (status !== 404 && status !== 405 && status !== 400 && status !== 422) {
+        throw error;
+      }
     }
 
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
-      return response.json();
+    const chatCompletionsEndpoint = resolveOpenAIChatEndpoint();
+    if (!chatCompletionsEndpoint) {
+      throw primaryError || new Error('OpenAI-compatible endpoint is not configured.');
     }
-    const text = await response.text();
-    return { response: text, tokens_generated: null };
+
+    const messages = [];
+    if (coderBridge.openAI && coderBridge.openAI.systemPrompt) {
+      messages.push({ role: 'system', content: coderBridge.openAI.systemPrompt });
+    }
+    messages.push({ role: 'user', content: prompt });
+
+    const openAiPayload = {
+      messages,
+      stream: false,
+    };
+    const inferredModel =
+      (coderBridge.openAI && coderBridge.openAI.model) ||
+      (coderBridge.defaults && coderBridge.defaults.model);
+    if (inferredModel) {
+      openAiPayload.model = inferredModel;
+    }
+    if (typeof coderBridge.defaults.temperature === 'number') {
+      openAiPayload.temperature = coderBridge.defaults.temperature;
+    }
+    if (typeof coderBridge.defaults.maxNewTokens === 'number') {
+      openAiPayload.max_tokens = coderBridge.defaults.maxNewTokens;
+    }
+
+    try {
+      const { payload: fallbackPayload } = await postJson(chatCompletionsEndpoint, openAiPayload, headers);
+      return buildResponseObject(fallbackPayload, 'chat-completions');
+    } catch (error) {
+      if (primaryError) {
+        const aggregated = new Error(
+          `${providerShortLabel} /chat: ${normaliseError(primaryError)}; OpenAI-compatible fallback: ${normaliseError(error)}`,
+        );
+        const primaryStatus =
+          primaryError && typeof primaryError.status === 'number' ? Number(primaryError.status) : undefined;
+        const fallbackStatus = error && typeof error.status === 'number' ? Number(error.status) : undefined;
+        aggregated.status =
+          primaryStatus && (primaryStatus === 404 || primaryStatus === 405)
+            ? primaryStatus
+            : fallbackStatus || primaryStatus;
+        throw aggregated;
+      }
+      throw error;
+    }
   }
 
   async function checkCoderHealth(prefetchedPayload) {
@@ -513,7 +799,14 @@
       if (payload && typeof payload.tokens_generated === 'number') {
         logToTerminal(`Tokens generated: ${payload.tokens_generated}`, 'system');
       }
-      if (fallbackModel) {
+      if (payload && payload.source === 'chat-completions') {
+        logToTerminal(`${providerShortLabel} OpenAI-compatible fallback active.`, 'system');
+      }
+      const responseModel = payload && typeof payload.model === 'string' ? payload.model : null;
+      if (responseModel) {
+        logToTerminal(`${providerShortLabel} model confirmed (${responseModel}).`, 'system');
+      }
+      if (fallbackModel && (!responseModel || fallbackModel !== responseModel)) {
         logToTerminal(`${providerShortLabel} fallback channel confirmed (${fallbackModel}).`, 'system');
       }
       heroPromptInput.value = '';
