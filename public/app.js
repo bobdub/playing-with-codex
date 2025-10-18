@@ -105,6 +105,59 @@
     return text.length <= boundary ? text : `${text.slice(0, boundary)}…`;
   }
 
+  const defaultChatPath = '/chat';
+  const defaultHealthPath = '/health';
+
+  function ensureEndpointPath(endpoint, fallbackPath) {
+    if (!endpoint || !fallbackPath) return endpoint;
+    const trimmedEndpoint = endpoint.trim();
+    if (!trimmedEndpoint || trimmedEndpoint.includes('?') || trimmedEndpoint.includes('#')) {
+      return trimmedEndpoint;
+    }
+    const trimmedFallback = fallbackPath.trim();
+    if (!trimmedFallback) return trimmedEndpoint;
+    const normalisedEndpoint = trimmedEndpoint.replace(/\/+$/, '');
+    const normalisedFallback = trimmedFallback.replace(/^\/+/, '');
+    if (!normalisedFallback) return trimmedEndpoint;
+    const lowerEndpoint = normalisedEndpoint.toLowerCase();
+    const lowerFallback = normalisedFallback.toLowerCase();
+    if (lowerEndpoint.endsWith(`/${lowerFallback}`) || lowerEndpoint === lowerFallback) {
+      return normalisedEndpoint === trimmedEndpoint ? trimmedEndpoint : normalisedEndpoint;
+    }
+    return `${normalisedEndpoint}/${normalisedFallback}`;
+  }
+
+  function extractGatewayBase(endpoint, fallbackPath) {
+    if (!endpoint || !fallbackPath) return null;
+    const trimmedEndpoint = endpoint.trim();
+    const trimmedFallback = fallbackPath.trim();
+    if (!trimmedEndpoint || !trimmedFallback) return null;
+    if (trimmedEndpoint.includes('?') || trimmedEndpoint.includes('#')) return null;
+    const normalisedEndpoint = trimmedEndpoint.replace(/\/+$/, '');
+    const normalisedFallback = trimmedFallback.replace(/^\/+/, '');
+    if (!normalisedFallback) return null;
+    const lowerEndpoint = normalisedEndpoint.toLowerCase();
+    const lowerFallback = normalisedFallback.toLowerCase();
+    const suffix = `/${lowerFallback}`;
+    if (lowerEndpoint.endsWith(suffix)) {
+      const base = normalisedEndpoint.slice(0, normalisedEndpoint.length - suffix.length);
+      return base ? base : null;
+    }
+    if (lowerEndpoint === lowerFallback) {
+      return null;
+    }
+    return null;
+  }
+
+  function inferGatewayBase(chatEndpoint, healthEndpoint) {
+    const chatBase = extractGatewayBase(chatEndpoint, defaultChatPath);
+    const healthBase = extractGatewayBase(healthEndpoint, defaultHealthPath);
+    if (chatBase && healthBase) {
+      return chatBase === healthBase ? chatBase : chatBase.length >= healthBase.length ? chatBase : healthBase;
+    }
+    return chatBase || healthBase || null;
+  }
+
   const providerLabel = 'Qwen2.5 Coder';
   const providerShortLabel = 'Qwen';
   const providerSlug = 'qwen';
@@ -134,8 +187,8 @@
     status: 'calibrating',
     phase: 'interface-foundations',
     endpoints: {
-      chat: resolveEndpoint(coderBase, rawChatEndpoint, '/chat'),
-      health: resolveEndpoint(coderBase, rawHealthEndpoint, '/health'),
+      chat: resolveEndpoint(coderBase, rawChatEndpoint, defaultChatPath),
+      health: resolveEndpoint(coderBase, rawHealthEndpoint, defaultHealthPath),
     },
     defaults: {
       maxNewTokens: datasetMaxTokens ?? configMaxTokens ?? 1024,
@@ -147,15 +200,36 @@
     const candidates = [];
     const seen = new Set();
 
+    function addCandidate(chat, health) {
+      if (!chat || !health) {
+        return;
+      }
+      const key = `${chat}::${health}`;
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      candidates.push({ chat, health });
+    }
+
     const initial = {
       chat: coderBridge.endpoints.chat,
       health: coderBridge.endpoints.health,
     };
 
-    if (initial.chat && initial.health) {
-      const key = `${initial.chat}::${initial.health}`;
-      seen.add(key);
-      candidates.push(initial);
+    addCandidate(initial.chat, initial.health);
+
+    const inferredBase = inferGatewayBase(initial.chat, initial.health);
+    if (inferredBase) {
+      addCandidate(joinUrl(inferredBase, defaultChatPath), joinUrl(inferredBase, defaultHealthPath));
+    }
+
+    const heuristic = {
+      chat: ensureEndpointPath(initial.chat, defaultChatPath),
+      health: ensureEndpointPath(initial.health, defaultHealthPath),
+    };
+    if (heuristic.chat !== initial.chat || heuristic.health !== initial.health) {
+      addCandidate(heuristic.chat, heuristic.health);
     }
 
     if (usingDefaultGateway) {
@@ -164,15 +238,7 @@
         directBases.push(`http://${window.location.hostname}:8080`);
       }
       for (const base of directBases) {
-        const candidate = {
-          chat: joinUrl(base, '/chat'),
-          health: joinUrl(base, '/health'),
-        };
-        const key = `${candidate.chat}::${candidate.health}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          candidates.push(candidate);
-        }
+        addCandidate(joinUrl(base, defaultChatPath), joinUrl(base, defaultHealthPath));
       }
     }
 
