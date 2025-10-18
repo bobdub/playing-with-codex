@@ -1,0 +1,12 @@
+# Landing Page Connection Issues: Qwen Gateway Friction Map
+
+## Why Contributors Still Struggle to Connect
+The hero prompt is hard-wired to a Qwen gateway exposed through `data-llm-*` attributes on the landing page form, assuming a reverse proxy is already publishing `/api/qwen` for health and chat traffic.【F:public/index.html†L27-L47】 When that bridge is absent, `initializeCoderBridge()` flags the channel as "not configured" and leaves visitors with an offline status instead of guiding them to a fix.【F:public/app.js†L727-L738】 The JavaScript auto-configuration loop only succeeds when it can probe a working endpoint, so first-time caretakers must guess the required wiring before any reassurance appears in the UI.【F:public/app.js†L530-L548】
+
+## Symptoms Observed in the Field
+- **Health checks stall without fallback:** The status poll calls `/health`, and any failure immediately downgrades the hero to "offline" while simply logging a warning to the simulated terminal.【F:public/app.js†L683-L724】 There is no retry cadence, credential prompt, or link to gateway documentation when this occurs.
+- **Prompt submission exposes proxy errors:** When a visitor presses "Transmit intention," the request fails fast with 404/405 errors whenever nginx has not been configured to pass `/chat` through to the FastAPI service.【F:public/app.js†L744-L823】 The UI surfaces a warning, but it neither stores the attempted prompt nor offers actionable remediation beyond the generic message.
+- **Offline message hides next steps:** Even after the auto-configurator falls back to an OpenAI-compatible endpoint, the interface keeps focusing on the gateway misconfiguration without telling stewards which script to run or what overrides are available.【F:public/app.js†L780-L811】
+
+## Contributing Factors
+The bridge guide expects operators to SSH into the host and run `scripts/configure_qwen_gateway.sh`, or to hand-write an nginx stanza when automation is forbidden.【F:docs/QwenGatewayBridge.md†L1-L102】【F:docs/QwenGatewayBridge.md†L110-L154】 None of those steps are discoverable from the landing page itself. Additionally, credentials and overrides live in environment-specific scripts rather than a UI, so misalignment between deployment and frontend configuration is common.【F:docs/QwenGatewayBridge.md†L156-L209】 Until the landing page shepherds users toward these rituals, most visitors encounter an offline hero and abandon the experience.

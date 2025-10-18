@@ -49,6 +49,45 @@
           <h2 class="visually-hidden">Infinity response channel</h2>
           <p id="hero-response-text">Calibrating the Qwen2.5 channel…</p>
         </section>
+        <details class="hero__status-help" id="hero-setup-guide">
+          <summary class="hero__status-help-summary">Gateway setup checklist</summary>
+          <div class="hero__status-help-body">
+            <p>Ensure the Qwen bridge is aligned before testing the channel:</p>
+            <ul>
+              <li>Reverse proxy forwards <code>/chat</code> and <code>/health</code> to the gateway host.</li>
+              <li>The health probe responds with the expected model metadata.</li>
+              <li>POST <code>/chat</code> succeeds from the host running the automation script.</li>
+              <li>
+                Run
+                <a href="scripts/configure_qwen_gateway.sh" download>scripts/configure_qwen_gateway.sh</a>
+                to configure the bridge automatically.
+              </li>
+            </ul>
+            <p class="hero__status-help-footer">
+              Need more guidance? Open the
+              <a href="docs/QwenGatewayBridge.md" target="_blank" rel="noopener">gateway bridge guide</a>.
+            </p>
+          </div>
+        </details>
+        <section
+          id="hero-queue"
+          class="hero__queue"
+          aria-labelledby="hero-queue-heading"
+          aria-live="polite"
+          hidden
+        >
+          <h2 id="hero-queue-heading">Queued intentions</h2>
+          <p class="hero__queue-description">
+            We store prompts locally whenever the channel is offline so you can retry them once the gateway returns.
+          </p>
+          <ul id="hero-queue-list" class="hero__queue-list"></ul>
+          <div class="hero__queue-actions">
+            <button type="button" class="button button--secondary button--compact" id="hero-queue-retry-all">
+              Retry all
+            </button>
+            <button type="button" class="button-link" id="hero-queue-clear">Clear all</button>
+          </div>
+        </section>
         <p class="hero__description">
           Step into the MemoryGarden, plant resonant prompts, and trace how the knowledge index braids each symbol into Infinity’s evolving story.
         </p>
@@ -99,24 +138,50 @@
           <h2 id="landing-heading">Landing Portal</h2>
           <p class="panel__subtitle">Capture a prompt, tag its intention, and watch the resonance pulses collect.</p>
         </div>
-        <form id="prompt-form" class="prompt-form" novalidate>
+        <form id="prompt-form" class="prompt-form" aria-describedby="prompt-errors">
+          <div
+            id="prompt-errors"
+            class="form-errors"
+            role="alert"
+            aria-live="assertive"
+            tabindex="-1"
+            hidden
+          ></div>
           <div class="form-field">
             <label for="prompt-input">Prompt</label>
-            <textarea id="prompt-input" name="prompt" rows="4" required aria-describedby="prompt-help"></textarea>
+            <textarea
+              id="prompt-input"
+              name="prompt"
+              rows="4"
+              required
+              aria-describedby="prompt-help prompt-errors"
+            ></textarea>
             <p id="prompt-help" class="form-help">Describe the dream, question, or intention you want the network to hold.</p>
           </div>
           <div class="form-grid">
             <div class="form-field">
               <label for="prompt-tag">Pulse tag</label>
-              <input id="prompt-tag" name="tag" type="text" placeholder="e.g. dream-mapping" />
+              <input
+                id="prompt-tag"
+                name="tag"
+                type="text"
+                placeholder="e.g. dream-mapping"
+                aria-describedby="tag-help"
+              />
+              <p id="tag-help" class="form-help">
+                Optional · Use lowercase words or hyphenated phrases so future exports stay consistent.
+              </p>
             </div>
             <div class="form-field">
               <label for="prompt-intensity">Pulse intensity</label>
-              <select id="prompt-intensity" name="intensity">
+              <select id="prompt-intensity" name="intensity" aria-describedby="intensity-help">
                 <option value="gentle">Gentle</option>
                 <option value="steady">Steady</option>
                 <option value="radiant">Radiant</option>
               </select>
+              <p id="intensity-help" class="form-help">
+                Choose how strongly this pulse should glow inside the local log before the backend arrives.
+              </p>
             </div>
           </div>
           <button type="submit" class="button">Transmit pulse</button>
