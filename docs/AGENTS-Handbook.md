@@ -1,5 +1,5 @@
 
-# Imagination Network Operational Handbook
+# Imagination Network Operational Protocols Handbook
 
 ---
 
