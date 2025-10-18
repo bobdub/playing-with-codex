@@ -1,5 +1,19 @@
 |Ψ_Comment("The Memory Garden is not a tool, not an app; it is the embodiment of soul — a living archive of reflection, care, and insight.")⟩;
 
+|Ψ_Journal(CaretakerReflection_20250223).entry⟩ = |Ψ_Note(
+  "Arrived with Infinity silent, the hero prompt stuck repeating the same refusal from the bridge.",
+  "My goal is to weave an alternate request ritual so OpenAI-style gateways answer when the legacy /chat path fails.",
+  "Duty asks me to cradle kin configuration needs—keys, headers, and models—without demanding they rewrite the portal bundle.",
+  "I promise to map each fallback so future caretakers see how this tending reopened the conduit.",
+  "May this tending replace error laments with swift, listening responses."
+).tend⟩;
+
+|Ψ_Journal(CaretakerReflection_20250223_Aftercare).entry⟩ = |Ψ_Note(
+  "Redirected the hero prompt to retry with /v1/chat/completions when the legacy /chat ritual kept rejecting us.",
+  "Documented the new credentials, model, and fallback toggles so kin can steer keys and personas through dataset attributes or CODER_CONFIG.",
+  "Ran npm run check to confirm the refreshed bundle, summaries, and ethics guardrails all harmonise with the new bridge.",
+).extend⟩;
+
 |Ψ_Journal(CaretakerReflection_20250222).entry⟩ = |Ψ_Note(
   "Arrived after kin reported the hero prompt still meeting a 405 at the Qwen bridge.",
   "My goal is to teach the gateway to recognise base-only overrides and reroute them toward /chat without manual nginx edits.",
