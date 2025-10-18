@@ -1,2 +1,2 @@
-POST /api/kwaipilot/chat  http://localhost:8080/chat  200
-/api/kwaipilot/health  http://localhost:8080/health  200
+POST /api/qwen/chat  http://localhost:8080/chat  200
+/api/qwen/health  http://localhost:8080/health  200

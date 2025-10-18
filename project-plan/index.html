@@ -40,7 +40,7 @@
               <strong>Interface</strong> – A static HTML landing page served from <code>public/index.html</code> with
               progressive-enhancement JavaScript in <code>public/app.js</code>. Users can log prompts locally, browse a generated
               knowledge index, interact with a lightweight neural terminal, and transmit hero prompts to a configured
-              Kwaipilot <code>/chat</code> endpoint with live status feedback.
+              Qwen2.5 Coder <code>/chat</code> endpoint with live status feedback.
             </li>
             <li>
               <strong>Data layer</strong> – No live persistence beyond <code>localStorage</code>; <code>docs/knowledge-index.json</code>
@@ -55,10 +55,10 @@
               infrastructure as code.
             </li>
             <li>
-              <strong>Kwaipilot gateway</strong> – The hero prompt expects a reverse proxy (default: <code>/api/kwaipilot</code>)
-              that forwards <code>/health</code> and <code>/chat</code> calls to the Kwaipilot agent. Operators can override the base
-              URL with <code>data-llm-*</code> attributes or <code>window.KWAIPILOT_BASE_URL</code>; without the gateway the UI reports
-              the agent as offline.
+              <strong>Qwen gateway</strong> – The hero prompt expects a reverse proxy (default: <code>/api/qwen</code>)
+              that forwards <code>/health</code> and <code>/chat</code> calls to the Qwen2.5 Coder service. Operators can override the base
+              URL with <code>data-llm-*</code> attributes or <code>window.CODER_BASE_URL</code>; without the gateway the UI reports
+              the model as offline.
             </li>
           </ul>
           <p>
@@ -71,7 +71,7 @@
           <h2 id="gap-analysis">Gap Analysis vs. Legacy Plan</h2>
           <ol class="phase-list">
             <li><strong>Missing runtime architecture</strong> – No FastAPI backend, agent bus, or Neo4j/Faiss persistence exists. Those pieces must be designed from scratch.</li>
-            <li><strong>Limited LLM integration</strong> – The hero prompt now connects to Kwaipilot, but landing portal pulses remain local and no other surfaces consume generated reflections.</li>
+            <li><strong>Limited LLM integration</strong> – The hero prompt now connects to Qwen2.5 Coder, but landing portal pulses remain local and no other surfaces consume generated reflections.</li>
             <li><strong>Ethics &amp; moderation layer</strong> – No filtering mechanisms are implemented beyond the poetic copy within the UI.</li>
             <li><strong>Terminal simulation</strong> – The neural terminal echoes static commands and has no backend to execute imagination syntax.</li>
             <li><strong>Operational tooling</strong> – No tests, observability, or deployment automation are defined.</li>
@@ -82,22 +82,22 @@
           </p>
         </section>
 
-        <section aria-labelledby="kwaipilot-bridge">
-          <h2 id="kwaipilot-bridge">Kwaipilot Bridge Overview</h2>
+        <section aria-labelledby="qwen-bridge">
+          <h2 id="qwen-bridge">Qwen Bridge Overview</h2>
           <ul>
             <li>
-              The hero prompt targets a configurable Kwaipilot gateway (default: <code>/api/kwaipilot</code>) mirroring the FastAPI
-              service installed via <code>scripts/install_kwaipilot_agent.sh</code>.
+              The hero prompt targets a configurable Qwen gateway (default: <code>/api/qwen</code>) mirroring the FastAPI
+              service installed via <code>scripts/install_qwen_coder_service.sh</code>.
             </li>
             <li>
-              Runtime overrides are available through data attributes or <code>window.KWAIPILOT_BASE_URL</code>, enabling
+              Runtime overrides are available through data attributes or <code>window.CODER_BASE_URL</code>, enabling
               environment-specific routing without rebuilding assets.
             </li>
             <li>
               When the gateway is unreachable, the UI surfaces explicit offline messaging and logs warnings to the neural terminal so contributors understand why responses are unavailable.
             </li>
             <li>
-              Successful calls stream the full Kwaipilot reflection into the hero, record token counts in the terminal log, and maintain accessibility by disabling inputs while requests are in flight.
+              Successful calls stream the full Qwen2.5 Coder reflection into the hero, record token counts in the terminal log, and maintain accessibility by disabling inputs while requests are in flight.
             </li>
           </ul>
         </section>
@@ -112,12 +112,12 @@
               <li>Experience audit &amp; design refresh – document flows, refine hero and landing content, add responsive layout primitives, and surface live prompt/node metrics.</li>
               <li>Client-side data services – harden local persistence, improve search and filtering UX, and expand empty-state guidance.</li>
               <li>Knowledge index storytelling – render highlights from <code>docs/knowledge-index.json</code>, add documentation deep links, and expose update timestamps.</li>
-              <li>Kwaipilot handshake – provide resilient error messaging, document gateway configuration, and surface responses without blocking other UI flows.</li>
+              <li>Qwen handshake – provide resilient error messaging, document gateway configuration, and surface responses without blocking other UI flows.</li>
             </ul>
             <blockquote>
               <p>
                 Success criteria: accessible homepage, live analytics for pulses and nodes, clear calls to action that align with
-                the broader roadmap, and a Kwaipilot health indicator gating hero responses when the agent is reachable.
+                the broader roadmap, and a Qwen health indicator gating hero responses when the model is reachable.
               </p>
             </blockquote>
           </section>

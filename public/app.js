@@ -22,10 +22,19 @@
   const heroResponseContainer = document.getElementById('hero-response');
   const heroResponseText = document.getElementById('hero-response-text');
 
-  const globalKwaipilotConfig = typeof window !== 'undefined' && window.KWAIPILOT_CONFIG ? window.KWAIPILOT_CONFIG : null;
-  const globalKwaipilotBase =
-    (globalKwaipilotConfig && typeof globalKwaipilotConfig.baseUrl === 'string' && globalKwaipilotConfig.baseUrl) ||
-    (typeof window !== 'undefined' && typeof window.KWAIPILOT_BASE_URL === 'string' ? window.KWAIPILOT_BASE_URL : undefined);
+  const globalCoderConfig =
+    typeof window !== 'undefined' && window.CODER_CONFIG
+      ? window.CODER_CONFIG
+      : typeof window !== 'undefined' && window.KWAIPILOT_CONFIG
+        ? window.KWAIPILOT_CONFIG
+        : null;
+  const globalCoderBase =
+    (globalCoderConfig && typeof globalCoderConfig.baseUrl === 'string' && globalCoderConfig.baseUrl) ||
+    (typeof window !== 'undefined' && typeof window.CODER_BASE_URL === 'string'
+      ? window.CODER_BASE_URL
+      : typeof window !== 'undefined' && typeof window.KWAIPILOT_BASE_URL === 'string'
+        ? window.KWAIPILOT_BASE_URL
+        : undefined);
 
   function parsePositiveInt(value) {
     if (!value && value !== 0) return undefined;
@@ -63,28 +72,32 @@
     return text.length <= boundary ? text : `${text.slice(0, boundary)}…`;
   }
 
+  const providerLabel = 'Qwen2.5 Coder';
+  const providerShortLabel = 'Qwen';
+  const providerSlug = 'qwen';
+
   const datasetBase = heroPromptForm && heroPromptForm.dataset.llmBase;
-  const fallbackBaseUrl = '/api/kwaipilot';
-  const kwaipilotBase = datasetBase || globalKwaipilotBase || fallbackBaseUrl;
+  const fallbackBaseUrl = '/api/qwen';
+  const coderBase = datasetBase || globalCoderBase || fallbackBaseUrl;
   const datasetChatEndpoint = heroPromptForm && heroPromptForm.dataset.llmEndpoint;
   const datasetHealthEndpoint = heroPromptForm && heroPromptForm.dataset.llmHealthEndpoint;
   const datasetMaxTokens = heroPromptForm && parsePositiveInt(heroPromptForm.dataset.llmMaxTokens);
-  const configMaxTokens = globalKwaipilotConfig && parsePositiveInt(globalKwaipilotConfig.maxNewTokens);
+  const configMaxTokens = globalCoderConfig && parsePositiveInt(globalCoderConfig.maxNewTokens);
   const datasetTemperature = heroPromptForm && parseTemperature(heroPromptForm.dataset.llmTemperature);
-  const configTemperature = globalKwaipilotConfig && parseTemperature(globalKwaipilotConfig.temperature);
+  const configTemperature = globalCoderConfig && parseTemperature(globalCoderConfig.temperature);
   const usingDefaultGateway =
     !datasetChatEndpoint &&
     !datasetHealthEndpoint &&
     !datasetBase &&
-    !globalKwaipilotBase;
+    !globalCoderBase;
 
-  const kwaipilotBridge = {
-    provider: 'kwaipilot',
+  const coderBridge = {
+    provider: providerSlug,
     status: 'calibrating',
     phase: 'interface-foundations',
     endpoints: {
-      chat: datasetChatEndpoint || joinUrl(kwaipilotBase, '/chat'),
-      health: datasetHealthEndpoint || joinUrl(kwaipilotBase, '/health'),
+      chat: datasetChatEndpoint || joinUrl(coderBase, '/chat'),
+      health: datasetHealthEndpoint || joinUrl(coderBase, '/health'),
     },
     defaults: {
       maxNewTokens: datasetMaxTokens ?? configMaxTokens ?? 512,
@@ -92,13 +105,13 @@
     },
   };
 
-  function buildKwaipilotCandidates() {
+  function buildCoderCandidates() {
     const candidates = [];
     const seen = new Set();
 
     const initial = {
-      chat: kwaipilotBridge.endpoints.chat,
-      health: kwaipilotBridge.endpoints.health,
+      chat: coderBridge.endpoints.chat,
+      health: coderBridge.endpoints.health,
     };
 
     if (initial.chat && initial.health) {
@@ -128,7 +141,7 @@
     return candidates;
   }
 
-  async function probeKwaipilotCandidate(candidate) {
+  async function probeCoderCandidate(candidate) {
     if (!candidate || !candidate.health || !candidate.chat) {
       return { ok: false, payload: null };
     }
@@ -153,19 +166,19 @@
     }
   }
 
-  async function autoConfigureKwaipilotEndpoints() {
-    const previousChat = kwaipilotBridge.endpoints.chat;
-    const previousHealth = kwaipilotBridge.endpoints.health;
-    const candidates = buildKwaipilotCandidates();
+  async function autoConfigureCoderEndpoints() {
+    const previousChat = coderBridge.endpoints.chat;
+    const previousHealth = coderBridge.endpoints.health;
+    const candidates = buildCoderCandidates();
 
     for (const candidate of candidates) {
-      const probe = await probeKwaipilotCandidate(candidate);
+      const probe = await probeCoderCandidate(candidate);
       if (probe.ok) {
-        kwaipilotBridge.endpoints.chat = candidate.chat;
-        kwaipilotBridge.endpoints.health = candidate.health;
+        coderBridge.endpoints.chat = candidate.chat;
+        coderBridge.endpoints.health = candidate.health;
         const changed = candidate.chat !== previousChat || candidate.health !== previousHealth;
         if (changed) {
-          logToTerminal(`Kwaipilot endpoint updated to ${candidate.chat}`, 'system');
+          logToTerminal(`${providerShortLabel} endpoint updated to ${candidate.chat}`, 'system');
         }
         return { configured: true, changed, payload: probe.payload };
       }
@@ -175,14 +188,14 @@
   }
 
   function updateHeroStatus(status, message) {
-    kwaipilotBridge.status = status;
+    coderBridge.status = status;
     if (heroResponseContainer) {
       heroResponseContainer.dataset.status = status;
-      heroResponseContainer.dataset.provider = kwaipilotBridge.provider;
+      heroResponseContainer.dataset.provider = coderBridge.provider;
     }
     if (heroResponseText) {
       heroResponseText.dataset.status = status;
-      heroResponseText.dataset.provider = kwaipilotBridge.provider;
+      heroResponseText.dataset.provider = coderBridge.provider;
       heroResponseText.textContent = message;
     }
   }
@@ -229,16 +242,16 @@
     }
   }
 
-  async function requestKwaipilotResponse(prompt) {
+  async function requestCoderResponse(prompt) {
     const payload = { prompt };
-    if (typeof kwaipilotBridge.defaults.maxNewTokens === 'number') {
-      payload.max_new_tokens = kwaipilotBridge.defaults.maxNewTokens;
+    if (typeof coderBridge.defaults.maxNewTokens === 'number') {
+      payload.max_new_tokens = coderBridge.defaults.maxNewTokens;
     }
-    if (typeof kwaipilotBridge.defaults.temperature === 'number') {
-      payload.temperature = kwaipilotBridge.defaults.temperature;
+    if (typeof coderBridge.defaults.temperature === 'number') {
+      payload.temperature = coderBridge.defaults.temperature;
     }
 
-    const response = await fetch(kwaipilotBridge.endpoints.chat, {
+    const response = await fetch(coderBridge.endpoints.chat, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -259,9 +272,9 @@
 
       if (response.status === 405) {
         detail =
-          'Kwaipilot gateway rejected the request. Configure the reverse proxy to allow POST /chat requests.';
+          `${providerShortLabel} gateway rejected the request. Configure the reverse proxy to allow POST /chat requests.`;
       } else if (response.status === 404) {
-        detail = 'Kwaipilot gateway endpoint not found. Configure the reverse proxy to expose /chat.';
+        detail = `${providerShortLabel} gateway endpoint not found. Configure the reverse proxy to expose /chat.`;
       }
 
       const httpError = new Error(detail);
@@ -277,25 +290,25 @@
     return { response: text, tokens_generated: null };
   }
 
-  async function checkKwaipilotHealth(prefetchedPayload) {
-    if (!kwaipilotBridge.endpoints.health) {
+  async function checkCoderHealth(prefetchedPayload) {
+    if (!coderBridge.endpoints.health) {
       updateHeroStatus(
         'offline',
-        'Kwaipilot endpoint is not configured. Configure the gateway to enable live responses.',
+        `${providerShortLabel} endpoint is not configured. Configure the gateway to enable live responses.`,
       );
       return;
     }
 
     if (prefetchedPayload && typeof prefetchedPayload === 'object') {
-      const modelName = typeof prefetchedPayload.model === 'string' ? prefetchedPayload.model : 'Kwaipilot';
+      const modelName = typeof prefetchedPayload.model === 'string' ? prefetchedPayload.model : providerLabel;
       updateHeroStatus('online', `${modelName} channel ready. Share an intention to receive a reflection.`);
-      logToTerminal(`Kwaipilot online (${modelName}).`, 'system');
+      logToTerminal(`${providerShortLabel} online (${modelName}).`, 'system');
       return;
     }
 
-    updateHeroStatus('checking', 'Checking Kwaipilot status…');
+    updateHeroStatus('checking', `Checking ${providerShortLabel} status…`);
     try {
-      const response = await fetch(kwaipilotBridge.endpoints.health, {
+      const response = await fetch(coderBridge.endpoints.health, {
         method: 'GET',
         headers: { Accept: 'application/json' },
       });
@@ -308,34 +321,34 @@
       } catch (parseError) {
         payload = {};
       }
-      const modelName = payload && typeof payload.model === 'string' ? payload.model : 'Kwaipilot';
+      const modelName = payload && typeof payload.model === 'string' ? payload.model : providerLabel;
       updateHeroStatus('online', `${modelName} channel ready. Share an intention to receive a reflection.`);
-      logToTerminal(`Kwaipilot online (${modelName}).`, 'system');
+      logToTerminal(`${providerShortLabel} online (${modelName}).`, 'system');
     } catch (error) {
       const reason = normaliseError(error);
       updateHeroStatus(
         'offline',
-        'Kwaipilot channel is offline. Prompts are stored locally until the agent returns.',
+        `${providerShortLabel} channel is offline. Prompts are stored locally until the agent returns.`,
       );
-      logToTerminal(`Kwaipilot health check failed: ${reason}`, 'warning');
+      logToTerminal(`${providerShortLabel} health check failed: ${reason}`, 'warning');
     }
   }
 
-  async function initializeKwaipilotBridge() {
+  async function initializeCoderBridge() {
     if (!heroResponseText) return;
-    updateHeroStatus('calibrating', 'Calibrating the Kwaipilot channel…');
+    updateHeroStatus('calibrating', `Calibrating the ${providerShortLabel} channel…`);
 
-    const resolution = await autoConfigureKwaipilotEndpoints();
+    const resolution = await autoConfigureCoderEndpoints();
 
-    if (!kwaipilotBridge.endpoints.chat) {
+    if (!coderBridge.endpoints.chat) {
       updateHeroStatus(
         'offline',
-        'Kwaipilot endpoint is not configured. Configure the gateway to enable live responses.',
+        `${providerShortLabel} endpoint is not configured. Configure the gateway to enable live responses.`,
       );
       return;
     }
 
-    await checkKwaipilotHealth(resolution.payload);
+    await checkCoderHealth(resolution.payload);
   }
 
   async function handleHeroPromptSubmit(event) {
@@ -343,21 +356,21 @@
     event.preventDefault();
     const message = heroPromptInput.value.trim();
     if (!message) {
-      updateHeroStatus('warning', 'Share a prompt so Infinity can calibrate the Kwaipilot channel.');
+      updateHeroStatus('warning', `Share a prompt so Infinity can calibrate the ${providerShortLabel} channel.`);
       heroPromptInput.focus();
       return;
     }
 
-    if (!kwaipilotBridge.endpoints.chat) {
+    if (!coderBridge.endpoints.chat) {
       updateHeroStatus(
         'offline',
-        'Kwaipilot endpoint is not configured. Configure the gateway to enable live responses.',
+        `${providerShortLabel} endpoint is not configured. Configure the gateway to enable live responses.`,
       );
       return;
     }
 
     setHeroPromptBusy(true);
-    updateHeroStatus('sending', 'Transmitting intention to Kwaipilot…');
+    updateHeroStatus('sending', `Transmitting intention to ${providerShortLabel}…`);
 
     let shouldRefocus = false;
     let fallbackModel = null;
@@ -367,12 +380,12 @@
         let lastError;
         for (let attempt = 0; attempt < 2; attempt += 1) {
           try {
-            return await requestKwaipilotResponse(message);
+            return await requestCoderResponse(message);
           } catch (error) {
             lastError = error;
             const status = typeof error === 'object' && error && 'status' in error ? Number(error.status) : undefined;
             if (attempt === 0 && (status === 404 || status === 405)) {
-              const resolution = await autoConfigureKwaipilotEndpoints();
+              const resolution = await autoConfigureCoderEndpoints();
               if (resolution.changed) {
                 if (resolution.payload && typeof resolution.payload.model === 'string') {
                   fallbackModel = resolution.payload.model;
@@ -387,17 +400,17 @@
       })();
       const completion = payload && typeof payload.response === 'string' ? payload.response.trim() : '';
       if (completion) {
-        updateHeroStatus('responded', `Kwaipilot › ${truncateText(completion, 480)}`);
-        logToTerminal(`Kwaipilot › ${completion}`, 'kwaipilot');
+        updateHeroStatus('responded', `${providerShortLabel} › ${truncateText(completion, 480)}`);
+        logToTerminal(`${providerShortLabel} › ${completion}`, providerSlug);
       } else {
-        updateHeroStatus('responded', 'Kwaipilot responded with an empty message.');
-        logToTerminal('Kwaipilot returned an empty response.', 'warning');
+        updateHeroStatus('responded', `${providerShortLabel} responded with an empty message.`);
+        logToTerminal(`${providerShortLabel} returned an empty response.`, 'warning');
       }
       if (payload && typeof payload.tokens_generated === 'number') {
         logToTerminal(`Tokens generated: ${payload.tokens_generated}`, 'system');
       }
       if (fallbackModel) {
-        logToTerminal(`Kwaipilot fallback channel confirmed (${fallbackModel}).`, 'system');
+        logToTerminal(`${providerShortLabel} fallback channel confirmed (${fallbackModel}).`, 'system');
       }
       heroPromptInput.value = '';
       shouldRefocus = true;
@@ -407,12 +420,12 @@
       if (status === 404 || status === 405) {
         updateHeroStatus(
           'offline',
-          'Kwaipilot gateway is not accepting chat requests. Configure the reverse proxy to forward POST /chat to the agent.',
+          `${providerShortLabel} gateway is not accepting chat requests. Configure the reverse proxy to forward POST /chat to the agent.`,
         );
-        logToTerminal(`Kwaipilot gateway refused the request (${reason}).`, 'warning');
+        logToTerminal(`${providerShortLabel} gateway refused the request (${reason}).`, 'warning');
       } else {
-        updateHeroStatus('error', `Kwaipilot request failed: ${reason}`);
-        logToTerminal(`Kwaipilot request failed: ${reason}`, 'error');
+        updateHeroStatus('error', `${providerShortLabel} request failed: ${reason}`);
+        logToTerminal(`${providerShortLabel} request failed: ${reason}`, 'error');
       }
       shouldRefocus = true;
     } finally {
@@ -746,6 +759,6 @@
 
   loadPrompts();
   loadKnowledgeIndex();
-  initializeKwaipilotBridge();
+  initializeCoderBridge();
   logToTerminal('Neural terminal initialized. Type "help" to see available commands.');
 })();

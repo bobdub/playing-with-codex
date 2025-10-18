@@ -654,7 +654,7 @@ select:focus {
   color: var(--success);
 }
 
-.terminal-line[data-tone='kwaipilot'] {
+.terminal-line[data-tone='qwen'] {
   color: var(--success);
   font-style: italic;
 }

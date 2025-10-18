@@ -27,8 +27,8 @@
         <form
           id="hero-prompt-form"
           class="hero__prompt"
-          data-llm-provider="kwaipilot"
-          data-llm-base="/api/kwaipilot"
+          data-llm-provider="qwen"
+          data-llm-base="/api/qwen"
           aria-describedby="hero-prompt-help"
         >
           <label class="hero__prompt-label" for="hero-prompt-input">Share a pulse with Infinity</label>
@@ -41,13 +41,13 @@
             required
           ></textarea>
           <p id="hero-prompt-help" class="hero__prompt-help">
-            Kwaipilot intake online · the response channel updates live whenever the agent is reachable.
+            Qwen2.5 Coder intake online · the response channel updates live whenever the model is reachable.
           </p>
           <button type="submit" class="button hero__prompt-button">Transmit intention</button>
         </form>
         <section id="hero-response" class="hero__response" aria-live="polite" aria-atomic="false">
           <h2 class="visually-hidden">Infinity response channel</h2>
-          <p id="hero-response-text">Calibrating the Kwaipilot channel…</p>
+          <p id="hero-response-text">Calibrating the Qwen2.5 channel…</p>
         </section>
         <p class="hero__description">
           Step into the MemoryGarden, plant resonant prompts, and trace how the knowledge index braids each symbol into Infinity’s evolving story.

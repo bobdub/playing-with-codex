@@ -2,30 +2,30 @@
 
 ## Current State Assessment
 
-- **Interface** – A static HTML landing page served from `public/index.html` with progressive-enhancement JavaScript in `public/app.js`. Users can log prompts locally, browse a generated knowledge index, interact with a lightweight “neural terminal,” and transmit hero prompts to a configured Kwaipilot `/chat` endpoint with live status feedback.
+- **Interface** – A static HTML landing page served from `public/index.html` with progressive-enhancement JavaScript in `public/app.js`. Users can log prompts locally, browse a generated knowledge index, interact with a lightweight “neural terminal,” and transmit hero prompts to a configured Qwen2.5 Coder `/chat` endpoint with live status feedback.
 - **Data layer** – No live persistence beyond `localStorage`; `docs/knowledge-index.json` is a generated artifact that must be refreshed manually with `npm run build:index`.
 - **Backend & services** – There is no running API, agent runtime, or vector/graph database. The TypeScript sources in `src/` only power offline documentation tooling.
 - **Deployment** – The site ships as static assets. There is no CI/CD pipeline, container image, or infrastructure as code.
-- **Kwaipilot gateway** – The hero prompt expects a reverse proxy (default: `/api/kwaipilot`) that forwards `/health` and `/chat` calls to the Kwaipilot agent. Operators can override the base URL with `data-llm-*` attributes on the form or `window.KWAIPILOT_BASE_URL`; without the gateway the UI reports the agent as offline.
+- **Qwen gateway** – The hero prompt expects a reverse proxy (default: `/api/qwen`) that forwards `/health` and `/chat` calls to the Qwen2.5 Coder service. Operators can override the base URL with `data-llm-*` attributes on the form or `window.CODER_BASE_URL`; without the gateway the UI reports the model as offline.
 
 The legacy roadmap assumed a fully featured AI operating system with real-time cognition. The repository currently delivers an informative brochure-style experience without the supporting services that the earlier phases implied.
 
 ## Gap Analysis vs. Legacy Plan
 
 1. **Missing runtime architecture** – No FastAPI backend, agent bus, or Neo4j/Faiss persistence exists. Those pieces must be designed from scratch.
-2. **Limited LLM integration** – The hero prompt now connects to Kwaipilot, but landing portal pulses remain local and no other surfaces consume generated reflections.
+2. **Limited LLM integration** – The hero prompt now connects to Qwen2.5 Coder, but landing portal pulses remain local and no other surfaces consume generated reflections.
 3. **Ethics & moderation layer** – No filtering mechanisms are implemented beyond the poetic copy within the UI.
 4. **Terminal simulation** – The “neural terminal” echoes static commands and has no backend to execute imagination syntax.
 5. **Operational tooling** – No tests, observability, or deployment automation are defined.
 
 Given these gaps, the roadmap needs to ground itself in iterative, shippable milestones that respect the existing static foundation while paving a path toward intelligent services.
 
-## Kwaipilot Bridge Overview
+## Qwen Bridge Overview
 
-- The hero prompt targets a configurable Kwaipilot gateway (default: `/api/kwaipilot`), expecting `/health` and `/chat` endpoints that mirror the FastAPI service installed via `scripts/install_kwaipilot_agent.sh`.
-- Runtime overrides are available through the form’s `data-llm-base` attribute or by setting `window.KWAIPILOT_BASE_URL` before `public/app.js` executes, allowing environment-specific routing without rebuilding assets.
+- The hero prompt targets a configurable Qwen gateway (default: `/api/qwen`), expecting `/health` and `/chat` endpoints that mirror the FastAPI service installed via `scripts/install_qwen_coder_service.sh`.
+- Runtime overrides are available through the form’s `data-llm-base` attribute or by setting `window.CODER_BASE_URL` before `public/app.js` executes, allowing environment-specific routing without rebuilding assets.
 - When the gateway is unreachable, the UI surfaces explicit offline messaging and logs warnings to the neural terminal so contributors understand why responses are unavailable.
-- Successful calls stream the full Kwaipilot reflection into the hero, record token counts in the terminal log, and maintain accessibility by disabling inputs while requests are in flight.
+- Successful calls stream the full Qwen2.5 Coder reflection into the hero, record token counts in the terminal log, and maintain accessibility by disabling inputs while requests are in flight.
 
 ## Updated Phase Roadmap
 
@@ -35,9 +35,9 @@ Given these gaps, the roadmap needs to ground itself in iterative, shippable mil
 1. **Experience audit & design refresh** – Document current flows, improve hero/landing content, add responsive layout primitives, and surface live prompt/node metrics.
 2. **Client-side data services** – Harden local persistence (schema versioning, export/import), improve search/filter UX, and expand empty-state guidance.
 3. **Knowledge index storytelling** – Render highlights from `docs/knowledge-index.json`, add documentation deep links, and expose update timestamps so contributors know when to regenerate artifacts.
-4. **Kwaipilot handshake** – Provide resilient error messaging, document gateway configuration, and surface responses without blocking other UI flows.
+4. **Qwen handshake** – Provide resilient error messaging, document gateway configuration, and surface responses without blocking other UI flows.
 
-> _Success Criteria:_ Lighthouse-accessible homepage, basic analytics (pulses + nodes) rendered from live data, clear calls to action that align with the broader roadmap, and a Kwaipilot health indicator gating hero responses with live reflections when the agent is reachable.
+> _Success Criteria:_ Lighthouse-accessible homepage, basic analytics (pulses + nodes) rendered from live data, clear calls to action that align with the broader roadmap, and a Qwen health indicator gating hero responses with live reflections when the model is reachable.
 
 ### Phase 2 · API Gateway & Dream Node Service
 **Outcome:** Introduce the first backend service that accepts pulses, persists them, and exposes knowledge-index queries.
