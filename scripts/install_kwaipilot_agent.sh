@@ -63,6 +63,7 @@ from typing import Optional
 
 import torch
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -72,6 +73,13 @@ DEFAULT_TEMPERATURE = float(os.environ.get("KWAI_DEFAULT_TEMPERATURE", "0.6"))
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
 app = FastAPI(title="Kwaipilot Agent", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 _tokenizer_kwargs = {"token": HF_TOKEN} if HF_TOKEN else {}
 _model_kwargs = {
