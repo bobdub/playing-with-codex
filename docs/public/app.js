@@ -35,6 +35,14 @@
       : typeof window !== 'undefined' && typeof window.KWAIPILOT_BASE_URL === 'string'
         ? window.KWAIPILOT_BASE_URL
         : undefined);
+  const configChatEndpoint =
+    globalCoderConfig && typeof globalCoderConfig.chatEndpoint === 'string'
+      ? globalCoderConfig.chatEndpoint
+      : undefined;
+  const configHealthEndpoint =
+    globalCoderConfig && typeof globalCoderConfig.healthEndpoint === 'string'
+      ? globalCoderConfig.healthEndpoint
+      : undefined;
 
   function parsePositiveInt(value) {
     if (!value && value !== 0) return undefined;
@@ -88,6 +96,8 @@
   const usingDefaultGateway =
     !datasetChatEndpoint &&
     !datasetHealthEndpoint &&
+    !configChatEndpoint &&
+    !configHealthEndpoint &&
     !datasetBase &&
     !globalCoderBase;
 
@@ -96,12 +106,12 @@
     status: 'calibrating',
     phase: 'interface-foundations',
     endpoints: {
-      chat: datasetChatEndpoint || joinUrl(coderBase, '/chat'),
-      health: datasetHealthEndpoint || joinUrl(coderBase, '/health'),
+      chat: datasetChatEndpoint || configChatEndpoint || joinUrl(coderBase, '/chat'),
+      health: datasetHealthEndpoint || configHealthEndpoint || joinUrl(coderBase, '/health'),
     },
     defaults: {
-      maxNewTokens: datasetMaxTokens ?? configMaxTokens ?? 512,
-      temperature: datasetTemperature ?? configTemperature ?? 0.6,
+      maxNewTokens: datasetMaxTokens ?? configMaxTokens ?? 1024,
+      temperature: datasetTemperature ?? configTemperature ?? 0.2,
     },
   };
 

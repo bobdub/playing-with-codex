@@ -6,7 +6,7 @@
 - **Data layer** – No live persistence beyond `localStorage`; `docs/knowledge-index.json` is a generated artifact that must be refreshed manually with `npm run build:index`.
 - **Backend & services** – There is no running API, agent runtime, or vector/graph database. The TypeScript sources in `src/` only power offline documentation tooling.
 - **Deployment** – The site ships as static assets. There is no CI/CD pipeline, container image, or infrastructure as code.
-- **Qwen gateway** – The hero prompt expects a reverse proxy (default: `/api/qwen`) that forwards `/health` and `/chat` calls to the Qwen2.5 Coder service. Operators can override the base URL with `data-llm-*` attributes on the form or `window.CODER_BASE_URL`; without the gateway the UI reports the model as offline.
+- **Qwen gateway** – The hero prompt expects a reverse proxy (default: `/api/qwen`) that forwards `/health` and `/chat` calls to the Qwen2.5 Coder service. Operators can override the base URL with `data-llm-*` attributes on the form or `window.CODER_CONFIG.baseUrl`/`window.CODER_BASE_URL`; without the gateway the UI reports the model as offline.
 
 The legacy roadmap assumed a fully featured AI operating system with real-time cognition. The repository currently delivers an informative brochure-style experience without the supporting services that the earlier phases implied.
 
@@ -23,7 +23,9 @@ Given these gaps, the roadmap needs to ground itself in iterative, shippable mil
 ## Qwen Bridge Overview
 
 - The hero prompt targets a configurable Qwen gateway (default: `/api/qwen`), expecting `/health` and `/chat` endpoints that mirror the FastAPI service installed via `scripts/install_qwen_coder_service.sh`.
-- Runtime overrides are available through the form’s `data-llm-base` attribute or by setting `window.CODER_BASE_URL` before `public/app.js` executes, allowing environment-specific routing without rebuilding assets.
+- Runtime overrides are available through the form’s `data-llm-base` attribute or by setting `window.CODER_CONFIG.baseUrl`/`window.CODER_BASE_URL` before `public/app.js` executes, allowing environment-specific routing without rebuilding assets.
+- Infrastructure caretakers can run `scripts/configure_qwen_gateway.sh` (documented in [Qwen Gateway Bridge Guide](./QwenGatewayBridge.md)) to publish `/api/qwen` through nginx and capture overrides for multi-host deployments.
+- The gateway script now layers optional HTTP basic authentication and rate limiting so the rollout satisfies the roadmap’s API service hardening goals.
 - When the gateway is unreachable, the UI surfaces explicit offline messaging and logs warnings to the neural terminal so contributors understand why responses are unavailable.
 - Successful calls stream the full Qwen2.5 Coder reflection into the hero, record token counts in the terminal log, and maintain accessibility by disabling inputs while requests are in flight.
 
@@ -67,6 +69,8 @@ Given these gaps, the roadmap needs to ground itself in iterative, shippable mil
 ## Cross-Cutting Workstreams
 
 - **Documentation:** Maintain living architecture diagrams, update onboarding instructions, and record regeneration steps for the knowledge index.
+- **Observability:** Instrument new services with structured logs, `/metrics` endpoints, and GPU telemetry so latency, throughput, and persona fidelity stay transparent during rollouts.
+- **Workflow validation:** Keep deterministic baselines in `docs/QwenWorkflowValidationBaseline.json` and run `scripts/validate_qwen_workflows.py` after service or gateway changes to catch regressions before kin notice them.
 - **Testing & Quality:** Introduce linting/unit tests in TypeScript, add UI snapshot tests, and set expectations for manual QA around creative interactions.
 - **Community & Ethics:** Define contribution guidelines emphasising safety, tone, and respectful imaginative exploration.
 
